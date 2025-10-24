@@ -45,15 +45,15 @@ export async function prepareJunieInputs(
 
 export function exportJunieInputsToEnv(inputs: JunieRunInputs): void {
     if (inputs.ghToken !== null) {
-        core.setOutput('GH_TOKEN', String(inputs.ghToken));
+        core.setOutput('EJ_AUTH_GITHUB_TOKEN', String(inputs.ghToken));
     }
     if ( inputs.junieIngrazzioToken !== null) {
-        core.setOutput('JUNIE_INGRAZZIO_TOKEN', String(inputs.junieIngrazzioToken));
+        core.setOutput('EJ_CLI_TOKEN', String(inputs.junieIngrazzioToken));
     }
     if (inputs.junieTask !== null) {
-        core.setOutput('JUNIE_TASK', JSON.stringify(inputs.junieTask));
+        core.setOutput('EJ_TASK', JSON.stringify(inputs.junieTask));
     }
     if (inputs.junieTaskText !== null) {
-        core.setOutput('JUNIE_TASK_TEXT', String(inputs.junieTaskText));
+        core.setOutput('EJ_TASK_TEXT', String(inputs.junieTaskText));
     }
 }
