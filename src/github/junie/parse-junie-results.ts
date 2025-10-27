@@ -1,6 +1,6 @@
 import { readFile, access } from 'fs/promises';
 import { join } from 'path';
-import { homedir } from 'os';
+import {$} from "bun";
 
 export interface JunieResults {
     title: string;
@@ -8,7 +8,9 @@ export interface JunieResults {
 }
 
 export async function parseJunieResults(): Promise<JunieResults> {
-    const filePath = join(homedir(), '.junie', '.mattehorn', 'out', 'success.md');
+    const workingDir = process.env.WORKING_DIR!
+    const filePath = join(workingDir, '.mattehorn', 'out', 'success.md');
+    await $`ls -la ${workingDir}`
 
     try {
         await access(filePath);

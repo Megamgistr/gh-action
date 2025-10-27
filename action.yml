@@ -29,6 +29,10 @@ inputs:
     description: "Version of Junie to use"
     required: false
     default: "443.1"
+  junie_work_dir:
+    description: "Directory to use for Junie working files"
+    required: false
+    default: "/tmp/junie-work"
 
   # Auth configuration
   junie_api_key:
@@ -39,9 +43,6 @@ inputs:
     required: false
 
 outputs:
-  execution_file:
-    description: "Path to the Junie execution result file"
-    value: ${{ steps.junie-run.outputs.results_file }}
   branch_name:
     description: "Junie working branch"
     value: ${{ steps.prepare.outputs.WORKING_BRANCH }}
@@ -89,8 +90,9 @@ runs:
         EJ_TASK_TEXT: ${{ steps.prepare.outputs.EJ_TASK_TEXT }}
         MULTI_RUNS: true
         MATTERHORN_DEBUG_LOG: false
+        WORKING_DIR: ${{ inputs.junie_work_dir }}
       run: |
-        junie --auth="${CLI_TOKEN}" "${EJ_TASK}"
+        junie --cache-dir="${WORKING_DIR}" --output-format="json" --auth="${CLI_TOKEN}" "${EJ_TASK}"
 
     - name: Handle Junie results
       shell: bash
@@ -99,6 +101,7 @@ runs:
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/handle-results.ts
       env:
         PREPARE_OUTPUT: ${{ steps.prepare.outputs.PREPARE_OUTPUT }}
+        WORKING_DIR: ${{ inputs.junie_work_dir }}
 
     - name: Make Pull Request for the changes
       if: steps.junie-run-results.outputs.CREATE_PR == 'true'
