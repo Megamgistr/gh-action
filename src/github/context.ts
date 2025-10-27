@@ -116,7 +116,7 @@ export function parseGitHubContext(): GitHubContext {
     const commonFields = {
         runId: process.env.GITHUB_RUN_ID!,
         eventAction: context.payload.action,
-        actor: "Megamgistr",
+        actor: context.actor,
         inputs: {
             headRef: process.env.GITHUB_HEAD_REF,
             appToken: process.env.APP_TOKEN!,
@@ -125,6 +125,7 @@ export function parseGitHubContext(): GitHubContext {
             assigneeTrigger: process.env.ASSIGNEE_TRIGGER ?? "",
             labelTrigger: process.env.LABEL_TRIGGER ?? "",
             baseBranch: process.env.BASE_BRANCH,
+            targetBranch: process.env.TARGET_BRANCH,
             botId: String(JUNIE_APP_ID),
             botName: JUNIE_APP_USERNAME,
         },

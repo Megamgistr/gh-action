@@ -91,9 +91,7 @@ export function checkContainsTrigger(context: ParsedGitHubContext): boolean {
         isIssueCommentEvent(context) ||
         isPullRequestReviewCommentEvent(context)
     ) {
-        const commentBody = isIssueCommentEvent(context)
-            ? context.payload.comment.body
-            : context.payload.comment.body;
+        const commentBody = context.payload.comment.body;
 
         if (triggerPhraseRegex.test(commentBody)) {
             console.log(`Comment contains exact trigger phrase '${triggerPhrase}'`);
