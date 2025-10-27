@@ -9,7 +9,7 @@ export interface JunieResults {
 
 export async function parseJunieResults(): Promise<JunieResults> {
     const workingDir = process.env.WORKING_DIR!
-    const filePath = join(workingDir, '.mattehorn', 'out', 'success.md');
+    const filePath = join(workingDir, '.matterhorn', 'out', 'success.md');
     await $`ls -la ${workingDir}`
 
     try {
