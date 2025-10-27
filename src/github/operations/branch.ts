@@ -27,7 +27,6 @@ async function createNewBranch(baseBranch: string, branchName: string) {
         console.log(`Creating new branch ${newBranch}`);
         await $`git fetch origin ${baseBranch} --depth=1`;
         await $`git checkout ${baseBranch}`;
-        await $`git checkout -b ${newBranch}`;
 
         console.log(`Successfully created and checked out new branch: ${newBranch}`);
 
