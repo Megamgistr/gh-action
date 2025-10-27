@@ -1,9 +1,5 @@
 #!/usr/bin/env bun
 
-/**
- * Create the initial tracking comment when Junie starts working
- */
-
 import {createJobRunLink, createCommentBody} from "./common";
 import {
     isPullRequestReviewCommentEvent,
@@ -11,7 +7,7 @@ import {
 } from "../../context";
 import type {Octokit} from "@octokit/rest";
 
-export async function createInitialComment(
+export async function writeInitialFeedbackComment(
     octokit: Octokit,
     context: ParsedGitHubContext,
 ) {
@@ -25,7 +21,6 @@ export async function createInitialComment(
         let response;
 
         if (isPullRequestReviewCommentEvent(context)) {
-            // Only use createReplyForReviewComment if it's a PR review comment AND we have a comment_id
             response = await octokit.rest.pulls.createReplyForReviewComment({
                 owner: ownerLogin,
                 repo: name,
@@ -34,7 +29,6 @@ export async function createInitialComment(
                 body: initialBody,
             });
         } else {
-            // For all other cases (issues, issue comments, or missing comment_id)
             response = await octokit.rest.issues.createComment({
                 owner: ownerLogin,
                 repo: name,
@@ -42,7 +36,7 @@ export async function createInitialComment(
                 body: initialBody,
             });
         }
-        console.log(`✅ Created initial comment with ID: ${response.data.id}`);
+        console.log(`Created initial comment with ID: ${response.data.id}`);
         return response.data;
     } catch (error) {
         console.error("Error in initial comment:", error);

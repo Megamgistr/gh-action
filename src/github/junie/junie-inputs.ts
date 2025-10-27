@@ -3,10 +3,9 @@ import {
     isIssueCommentEvent, isIssuesEvent, isPullRequestEvent, isPullRequestReviewEvent, ParsedGitHubContext
 } from "../context";
 import * as core from "@actions/core";
-import {JunieRunInputs, JunieTask} from "./types/junie";
+import {JunieRunInputs, JunieTask, PrepareOutputOptions} from "./types/junie";
 
 export async function prepareJunieInputs(
-    ghToken: string,
     context: GitHubContext,
 ): Promise<JunieRunInputs> {
     const junieTask: JunieTask = {}
@@ -36,24 +35,43 @@ export async function prepareJunieInputs(
     }
 
     return {
-        ghToken: ghToken,
         junieIngrazzioToken: context.inputs.appToken,
         junieTask: junieTask,
-        junieTaskText: ""
+        junieTaskText: "" // If we create a prompt here
     }
 }
 
-export function exportJunieInputsToEnv(inputs: JunieRunInputs): void {
-    if (inputs.ghToken !== null) {
-        core.setOutput('EJ_AUTH_GITHUB_TOKEN', String(inputs.ghToken));
+export function exportPrepareOutputs(prepareOutputOptions: PrepareOutputOptions): void {
+    // Export branch info
+    core.setOutput('EJ_BASE_BRANCH', prepareOutputOptions.branchInfo.baseBranch);
+    core.setOutput('EJ_WORKING_BRANCH', prepareOutputOptions.branchInfo.workingBranch);
+
+    // Export junie run inputs
+    core.setOutput('EJ_AUTH_GITHUB_TOKEN', String(prepareOutputOptions.githubToken));
+    core.setOutput('EJ_CLI_TOKEN', String(prepareOutputOptions.junieInputs.junieIngrazzioToken));
+    core.setOutput('EJ_TASK', JSON.stringify(prepareOutputOptions.junieInputs.junieTask));
+    if (prepareOutputOptions.junieInputs.junieTaskText !== null) {
+        core.setOutput('EJ_TASK_TEXT', String(prepareOutputOptions.junieInputs.junieTaskText));
     }
-    if ( inputs.junieIngrazzioToken !== null) {
-        core.setOutput('EJ_CLI_TOKEN', String(inputs.junieIngrazzioToken));
+
+    // Export other outputs
+    if (prepareOutputOptions.initCommentId) {
+        core.setOutput('EJ_INIT_COMMENT_ID', String(prepareOutputOptions.initCommentId));
     }
-    if (inputs.junieTask !== null) {
-        core.setOutput('EJ_TASK', JSON.stringify(inputs.junieTask));
-    }
-    if (inputs.junieTaskText !== null) {
-        core.setOutput('EJ_TASK_TEXT', String(inputs.junieTaskText));
+    core.setOutput('PREPARE_OUTPUT', JSON.stringify(prepareOutputOptions));
+}
+
+export function exportResultsOutputs(createPR: boolean,
+                                     commitMessage: string,
+                                     prTitle?: string,
+                                     prBody?: string): void {
+    core.setOutput('CREATE_PR', createPR);
+    core.setOutput('COMMIT_MESSAGE', commitMessage);
+
+    if (prTitle && prBody) {
+        core.setOutput('PR_TITLE', prTitle);
+        core.setOutput('PR_BODY', prBody);
     }
 }
+
+

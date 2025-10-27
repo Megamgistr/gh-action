@@ -1,8 +1,5 @@
 import { GITHUB_SERVER_URL } from "../../api/config";
-
-export const SPINNER_HTML =
-  '<img src="https://github.com/user-attachments/assets/5ac382c7-e004-429b-8e35-7feb3e8f9c6f" width="14px" height="14px" style="vertical-align: middle; margin-left: 4px;" />';
-
+import {INIT_COMMENT_BODY} from "../../constants";
 export function createJobRunLink(
   owner: string,
   repo: string,
@@ -25,7 +22,7 @@ export function createCommentBody(
   jobRunLink: string,
   branchLink: string = "",
 ): string {
-  return `Junie is working… ${SPINNER_HTML}
+  return `${INIT_COMMENT_BODY}
 
 ${jobRunLink}${branchLink}`;
 }

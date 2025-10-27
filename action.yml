@@ -92,6 +92,32 @@ runs:
       run: |
         junie --auth="${CLI_TOKEN}" "${EJ_TASK}"
 
+    - name: Handle Junie results
+      shell: bash
+      id: junie-run-results
+      run: |
+        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/handle-results.ts
+      env:
+        PREPARE_OUTPUT: ${{ steps.prepare.outputs.PREPARE_OUTPUT }}
+
+    - name: Make Pull Request for the changes
+      if: steps.junie-run-results.outputs.CREATE_PR == 'true'
+      uses: peter-evans/create-pull-request@v7
+      with:
+          token: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
+          commit-message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
+          title: ${{ steps.junie-run-results.outputs.PR_TITLE }}
+          body: ${{ steps.junie-run-results.outputs.PR_BODY }}
+          branch: ${{ steps.prepare.outputs.EJ_WORKING_BRANCH }}
+          base: ${{ steps.prepare.outputs.EJ_BASE_BRANCH }}
+
+    - uses: EndBug/add-and-commit@v9
+      name: Commit changes
+      if: steps.junie-run-results.outputs.CREATE_PR == 'false'
+      with:
+        new_branch: ${{ steps.workflow-params.outputs.EJ_WORKING_BRANCH }}
+        message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
+
     - name: Revoke app token
       if: always() && inputs.github_token == '' && steps.prepare.outputs.skipped_due_to_workflow_validation_mismatch != 'true'
       shell: bash
