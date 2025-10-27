@@ -103,6 +103,15 @@ runs:
         PREPARE_OUTPUT: ${{ steps.prepare.outputs.PREPARE_OUTPUT }}
         WORKING_DIR: ${{ inputs.junie_work_dir }}
 
+    - name: Upload Junie working directory as artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: junie-working-directory
+        path: ${{ inputs.junie_work_dir }}
+        retention-days: 7
+        if-no-files-found: warn
+
     - name: Make Pull Request for the changes
       if: steps.junie-run-results.outputs.CREATE_PR == 'true'
       uses: peter-evans/create-pull-request@v7
