@@ -7,6 +7,7 @@ import {writeInitialFeedbackComment} from "../operations/comments/feedback";
 import {setupBranch} from "../operations/branch";
 import {PrepareJunieOptions} from "./types/junie";
 import {exportPrepareOutputs, prepareJunieInputs} from "./junie-inputs";
+import {checkContainsTrigger} from "../validation/trigger";
 
 
 export async function prepare({
@@ -14,8 +15,9 @@ export async function prepare({
                                   octokit,
                                   githubToken,
                               }: PrepareJunieOptions) {
-    if (!canHandle(context)) {
-        throw new Error(`We don't support this event yet. ${context.payload}`);
+    if (!shouldHandle(context)) {
+        console.log("No need to run junie")
+        process.exit(0);
     }
 
     let initCommentId
@@ -35,9 +37,9 @@ export async function prepare({
     })
 }
 
-function canHandle(context: GitHubContext): boolean {
+function shouldHandle(context: GitHubContext): boolean {
     if (context.inputs.prompt) {
         return true;
     }
-    return !!isEntityContext(context);
+    return isEntityContext(context) && checkContainsTrigger(context);
 }
