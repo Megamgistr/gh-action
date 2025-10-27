@@ -13,8 +13,9 @@ export async function handleResults() {
         issueId = prepareOutput.context.entityNumber
     }
     const commitMessage = COMMIT_MESSAGE_TEMPLATE(title, body, issueId)
-    shouldCreatePR ? exportResultsOutputs(shouldCreatePR, commitMessage) :
-        exportResultsOutputs(shouldCreatePR, commitMessage, PR_TITLE_TEMPLATE(title), PR_BODY_TEMPLATE(body, issueId))
+    shouldCreatePR ? exportResultsOutputs(shouldCreatePR, commitMessage, PR_TITLE_TEMPLATE(title), PR_BODY_TEMPLATE(body, issueId)) :
+        exportResultsOutputs(shouldCreatePR, commitMessage)
+
 }
 
 
