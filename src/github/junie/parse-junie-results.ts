@@ -1,6 +1,5 @@
-import { readFile, access } from 'fs/promises';
-import { join } from 'path';
-import {$} from "bun";
+import {readFile, access} from 'fs/promises';
+import {join} from 'path';
 
 export interface JunieResults {
     title: string;
@@ -10,7 +9,6 @@ export interface JunieResults {
 export async function parseJunieResults(): Promise<JunieResults> {
     const workingDir = process.env.WORKING_DIR!
     const filePath = join(workingDir, '.matterhorn', 'out', 'success.md');
-    await $`ls -la ${workingDir}`
 
     try {
         await access(filePath);
@@ -28,13 +26,14 @@ export async function parseJunieResults(): Promise<JunieResults> {
         const trimmedLine = line.trim();
         if (trimmedLine.startsWith('###')) {
             title = trimmedLine.replace(/^###\s*/, '');
-        } else if (trimmedLine.length > 0) {
-            bodyLines.push(trimmedLine);
         }
+        bodyLines.push(trimmedLine);
     }
 
     const body = bodyLines.join('\n');
-
+    if (title.length === 0) {
+        title = "Junie finished task"
+    }
     return {
         title,
         body
