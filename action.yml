@@ -78,10 +78,12 @@ runs:
         ALL_INPUTS: ${{ toJson(inputs) }}
 
     - name: Install Junie
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true'
       shell: bash
       run: npm install -g @jetbrains/junie-cli
 
     - name: Run Junie
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true'
       shell: bash
       env:
         CLI_TOKEN: ${{ steps.prepare.outputs.EJ_CLI_TOKEN }}
@@ -95,6 +97,7 @@ runs:
         junie --cache-dir="${WORKING_DIR}" --output-format="json" --auth="${CLI_TOKEN}" "${EJ_TASK}"
 
     - name: Handle Junie results
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true'
       shell: bash
       id: junie-run-results
       run: |
@@ -104,7 +107,7 @@ runs:
         WORKING_DIR: ${{ inputs.junie_work_dir }}
 
     - name: Check and prepare working directory for artifact
-      if: always()
+      if: always() && steps.prepare.outputs.SHOULD_SKIP != 'true'
       shell: bash
       run: |
         echo "Checking working directory: ${{ inputs.junie_work_dir }}"
@@ -120,7 +123,7 @@ runs:
         fi
 
     - name: Upload Junie working directory as artifact
-      if: always()
+      if: always() && steps.prepare.outputs.SHOULD_SKIP != 'true'
       uses: actions/upload-artifact@v4
       with:
         name: junie-working-directory
@@ -129,7 +132,7 @@ runs:
         if-no-files-found: warn
 
     - name: Make Pull Request for the changes
-      if: steps.junie-run-results.outputs.CREATE_PR == 'true'
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.CREATE_PR == 'true'
       uses: peter-evans/create-pull-request@v7
       with:
           token: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
@@ -141,13 +144,13 @@ runs:
 
     - uses: EndBug/add-and-commit@v9
       name: Commit changes
-      if: steps.junie-run-results.outputs.CREATE_PR == 'false'
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.CREATE_PR == 'false'
       with:
         new_branch: ${{ steps.workflow-params.outputs.EJ_WORKING_BRANCH }}
         message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
 
     - name: Revoke app token
-      if: always() && inputs.github_token == '' && steps.prepare.outputs.skipped_due_to_workflow_validation_mismatch != 'true'
+      if: always() && steps.prepare.outputs.SHOULD_SKIP != 'true' && inputs.github_token == '' && steps.prepare.outputs.skipped_due_to_workflow_validation_mismatch != 'true'
       shell: bash
       run: |
         curl -L \

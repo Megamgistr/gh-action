@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import {
     GitHubContext,
     isEntityContext
@@ -17,8 +18,11 @@ export async function prepare({
                               }: PrepareJunieOptions) {
     if (!shouldHandle(context)) {
         console.log("No need to run junie")
-        process.exit(0);
+        core.setOutput('SHOULD_SKIP', 'true');
+        return;
     }
+
+    core.setOutput('SHOULD_SKIP', 'false');
 
     let initCommentId
     if (isEntityContext(context)) {
