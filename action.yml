@@ -85,6 +85,7 @@ runs:
     - name: Run Junie
       if: steps.prepare.outputs.SHOULD_SKIP != 'true'
       shell: bash
+      id: junie-run
       env:
         CLI_TOKEN: ${{ steps.prepare.outputs.EJ_CLI_TOKEN }}
         EJ_TASK: ${{ steps.prepare.outputs.EJ_TASK }}
@@ -94,7 +95,10 @@ runs:
         MATTERHORN_DEBUG_LOG: false
         WORKING_DIR: ${{ inputs.junie_work_dir }}
       run: |
-        junie --cache-dir="${WORKING_DIR}" --output-format="json" --auth="${CLI_TOKEN}" "${EJ_TASK}"
+        OUTPUT=$(junie --cache-dir="${WORKING_DIR}" --output-format="json" --auth="${CLI_TOKEN}" "${EJ_TASK}")
+        echo "json_output<<EOF" >> $GITHUB_OUTPUT
+        echo "$OUTPUT" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
 
     - name: Handle Junie results
       if: steps.prepare.outputs.SHOULD_SKIP != 'true'
@@ -103,6 +107,7 @@ runs:
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/handle-results.ts
       env:
+        JSON_JUNIE_OUTPUT: ${{ steps.junie-run.outputs.json_output }}
         PREPARE_OUTPUT: ${{ steps.prepare.outputs.PREPARE_OUTPUT }}
         WORKING_DIR: ${{ inputs.junie_work_dir }}
 
