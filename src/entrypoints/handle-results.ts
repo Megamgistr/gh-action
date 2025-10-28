@@ -6,7 +6,9 @@ import {isEntityContext} from "../github/context";
 
 export async function handleResults() {
     const prepareOutput = JSON.parse(process.env.PREPARE_OUTPUT!) as PrepareOutputOptions
+    console.log("Parsed prepare output:", prepareOutput);
     const shouldCreatePR = prepareOutput.branchInfo.baseBranch !== prepareOutput.branchInfo.workingBranch
+    console.log("Should create PR:", shouldCreatePR);
     const {title, body} = await parseJunieResults()
     let issueId
     if (isEntityContext(prepareOutput.context)) {

@@ -21,7 +21,6 @@ export async function prepare({
         core.setOutput('SHOULD_SKIP', 'true');
         return;
     }
-
     core.setOutput('SHOULD_SKIP', 'false');
 
     let initCommentId
