@@ -1,6 +1,7 @@
 import {
     GitHubContext,
-    isIssueCommentEvent, isIssuesEvent, isPullRequestEvent, isPullRequestReviewEvent, ParsedGitHubContext
+    isIssueCommentEvent, isIssuesEvent, isPullRequestEvent,
+    isPullRequestReviewCommentEvent, isPullRequestReviewEvent, ParsedGitHubContext
 } from "../context";
 import * as core from "@actions/core";
 import {JunieRunInputs, JunieTask, PrepareOutputOptions} from "./types/junie";
@@ -28,6 +29,14 @@ export async function prepareJunieInputs(
 
     if (isPullRequestReviewEvent(context)) {
         junieTask.gitHubPullRequestReview = {url: context.payload.review.html_url}
+    }
+
+    if (isPullRequestReviewCommentEvent(context)) {
+        junieTask.gitHubPullRequestComment =
+            {
+                pullRequestUrl: context.payload.pull_request.html_url!,
+                url: context.payload.comment.html_url
+            }
     }
 
     if (isPullRequestEvent(context)) {
