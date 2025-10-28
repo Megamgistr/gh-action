@@ -114,6 +114,7 @@ runs:
         path: ${{ inputs.junie_work_dir }}
         retention-days: 7
         if-no-files-found: warn
+        include-hidden-files: true
 
     - name: Make Pull Request for the changes
       if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.CREATE_PR == 'true'
