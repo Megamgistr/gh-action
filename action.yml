@@ -106,28 +106,12 @@ runs:
         PREPARE_OUTPUT: ${{ steps.prepare.outputs.PREPARE_OUTPUT }}
         WORKING_DIR: ${{ inputs.junie_work_dir }}
 
-    - name: Check and prepare working directory for artifact
-      if: always() && steps.prepare.outputs.SHOULD_SKIP != 'true'
-      shell: bash
-      run: |
-        echo "Checking working directory: ${{ inputs.junie_work_dir }}"
-        if [ -d "${{ inputs.junie_work_dir }}" ]; then
-          echo "Directory exists"
-          ls -la "${{ inputs.junie_work_dir }}"
-          echo "Creating archive..."
-          tar -czf junie-work-archive.tar.gz -C "${{ inputs.junie_work_dir }}" .
-          echo "Archive created successfully"
-        else
-          echo "Directory does not exist: ${{ inputs.junie_work_dir }}"
-          exit 1
-        fi
-
     - name: Upload Junie working directory as artifact
       if: always() && steps.prepare.outputs.SHOULD_SKIP != 'true'
       uses: actions/upload-artifact@v4
       with:
         name: junie-working-directory
-        path: junie-work-archive.tar.gz
+        path: ${{ inputs.junie_work_dir }}
         retention-days: 7
         if-no-files-found: warn
 
@@ -146,6 +130,9 @@ runs:
       name: Commit changes
       if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.CREATE_PR == 'false'
       with:
+        github_token: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
+        author_name: ${{ steps.prepare.outputs.EJ_ACTOR_NAME }}
+        author_email: ${{ steps.prepare.outputs.EJ_ACTOR_EMAIL }}
         new_branch: ${{ steps.workflow-params.outputs.EJ_WORKING_BRANCH }}
         message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
 

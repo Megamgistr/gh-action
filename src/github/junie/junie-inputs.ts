@@ -42,6 +42,10 @@ export async function prepareJunieInputs(
 }
 
 export function exportPrepareOutputs(prepareOutputOptions: PrepareOutputOptions): void {
+    // Export actor info
+    core.setOutput('EJ_ACTOR_NAME', prepareOutputOptions.context.actor);
+    core.setOutput('EJ_ACTOR_EMAIL', prepareOutputOptions.context.actorEmail);
+
     // Export branch info
     core.setOutput('EJ_BASE_BRANCH', prepareOutputOptions.branchInfo.baseBranch);
     core.setOutput('EJ_WORKING_BRANCH', prepareOutputOptions.branchInfo.workingBranch);

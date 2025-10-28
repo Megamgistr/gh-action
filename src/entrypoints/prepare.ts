@@ -4,14 +4,15 @@ import * as core from "@actions/core";
 import {setupGitHubToken} from "../github/token";
 import {checkWritePermissions} from "../github/validation/permissions";
 import {createOctokit} from "../github/api/client";
-import {parseGitHubContext, isEntityContext} from "../github/context";
+import {parseGitHubContext, isEntityContext } from "../github/context";
 import {prepare} from "../github/junie/prepare-junie";
 
 async function run() {
     try {
-        const context = parseGitHubContext();
         const githubToken = await setupGitHubToken();
         const octokit = createOctokit(githubToken);
+        const context = parseGitHubContext();
+
         console.log("Parsed context:", context);
 
         if (isEntityContext(context)) {

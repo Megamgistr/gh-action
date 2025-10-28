@@ -9,6 +9,8 @@ import type {
     WorkflowRunEvent,
 } from "@octokit/webhooks-types";
 import {DEFAULT_TRIGGER_PHRASE, JUNIE_APP_ID, JUNIE_APP_USERNAME} from "./constants";
+import {Octokits} from "./api/client";
+
 export type WorkflowDispatchEvent = {
     action?: never;
     inputs?: Record<string, any>;
@@ -73,6 +75,7 @@ type BaseContext = {
     runId: string;
     eventAction?: string;
     actor: string;
+    actorEmail: string;
     inputs: {
         appToken: string;
         baseBranch?: string;
@@ -112,11 +115,11 @@ export type GitHubContext = ParsedGitHubContext | AutomationContext;
 
 export function parseGitHubContext(): GitHubContext {
     const context = github.context;
-
     const commonFields = {
         runId: process.env.GITHUB_RUN_ID!,
         eventAction: context.payload.action,
         actor: context.actor,
+        actorEmail: getActorEmail(),
         inputs: {
             headRef: process.env.GITHUB_HEAD_REF,
             appToken: process.env.APP_TOKEN!,
@@ -265,4 +268,10 @@ export function isAutomationContext(
     return AUTOMATION_EVENT_NAMES.includes(
         context.eventName as AutomationEventName,
     );
+}
+
+function getActorEmail(): string {
+    const actor = github.context.actor;
+    const userId = github.context.payload.sender?.id;
+    return `${userId}+${actor}@users.noreply.github.com`;
 }
