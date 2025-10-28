@@ -43,13 +43,13 @@ async function createNewBranch(baseBranch: string, branchName: string) {
 async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubContext) {
     const entityNumber = context.entityNumber;
     const isPR = context.isPR;
-    const targetBranch = context.inputs.targetBranch
-
-    if (isPR && targetBranch) {
+    if (isPR) {
+        let targetBranch = context.inputs.targetBranch
         let state: string = "";
         if (isPullRequestEvent(context)
             || isPullRequestReviewEvent(context)
             || isPullRequestReviewCommentEvent(context)) {
+            targetBranch = context.payload.pull_request.base.ref
             state = context.payload.pull_request.state;
         }
         if (isIssueCommentEvent(context)) {
@@ -67,7 +67,7 @@ async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubC
 
             return {
                 baseBranch: baseBranch,
-                workingBranch: targetBranch,
+                workingBranch: targetBranch!,
             };
         }
     }
