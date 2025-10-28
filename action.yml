@@ -130,7 +130,6 @@ runs:
       name: Commit changes
       if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.CREATE_PR == 'false'
       with:
-        github_token: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
         author_name: ${{ steps.prepare.outputs.EJ_ACTOR_NAME }}
         author_email: ${{ steps.prepare.outputs.EJ_ACTOR_EMAIL }}
         new_branch: ${{ steps.workflow-params.outputs.EJ_WORKING_BRANCH }}
