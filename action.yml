@@ -132,7 +132,7 @@ runs:
       with:
         author_name: ${{ steps.prepare.outputs.EJ_ACTOR_NAME }}
         author_email: ${{ steps.prepare.outputs.EJ_ACTOR_EMAIL }}
-        new_branch: ${{ steps.workflow-params.outputs.EJ_WORKING_BRANCH }}
+        new_branch: ${{ steps.prepare.outputs.EJ_WORKING_BRANCH }}
         message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
 
     - name: Revoke app token
