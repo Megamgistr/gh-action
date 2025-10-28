@@ -45,7 +45,7 @@ async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubC
     const isPR = context.isPR;
     const targetBranch = context.inputs.targetBranch
 
-    if (targetBranch) {
+    if (isPR && targetBranch) {
         let state: string = "";
         if (isPullRequestEvent(context)
             || isPullRequestReviewEvent(context)
