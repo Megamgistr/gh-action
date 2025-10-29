@@ -80,7 +80,7 @@ runs:
     - name: Install Junie
       if: steps.prepare.outputs.SHOULD_SKIP != 'true'
       shell: bash
-      run: npm install -g @jetbrains/junie-cli462.1.0
+      run: npm install -g @jetbrains/junie-cli@462.1.0
 
     - name: Run Junie
       if: steps.prepare.outputs.SHOULD_SKIP != 'true'
