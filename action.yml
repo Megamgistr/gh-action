@@ -33,6 +33,10 @@ inputs:
     description: "Directory to use for Junie working files"
     required: false
     default: "/tmp/junie-work"
+  path_to_bun_executable:
+    description: "Absolute path to the Bun executable on the runner; leave empty to auto-install Bun."
+    required: false
+    default: ""
 
   # Auth configuration
   junie_api_key:
