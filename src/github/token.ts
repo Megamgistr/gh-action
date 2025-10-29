@@ -63,15 +63,20 @@ export async function setupGitHubToken(): Promise<string> {
       return providedToken;
     }
 
+    const defaultWFToken = process.env.DEFAULT_WORKFLOW_TOKEN;
+
+    if (defaultWFToken) {
+        console.log("Using DEFAULT_WORKFLOW_TOKEN for authentication");
+        return defaultWFToken;
+    }
+
     console.log("Requesting OIDC token...");
     const oidcToken = await retryWithBackoff(() => getOidcToken());
-    console.log("OIDC token successfully obtained");
 
     console.log("Exchanging OIDC token for app token...");
     const appToken = await retryWithBackoff(() =>
       exchangeForAppToken(oidcToken),
     );
-    console.log("App token successfully obtained");
 
     console.log("Using GITHUB_TOKEN from OIDC");
     return appToken;

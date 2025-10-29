@@ -9,7 +9,6 @@ import type {
     WorkflowRunEvent,
 } from "@octokit/webhooks-types";
 import {DEFAULT_TRIGGER_PHRASE, JUNIE_APP_ID, JUNIE_APP_USERNAME} from "./constants";
-import {Octokits} from "./api/client";
 
 export type WorkflowDispatchEvent = {
     action?: never;
@@ -52,7 +51,6 @@ export type ScheduleEvent = {
     };
 };
 
-// Event name constants for better maintainability
 const ENTITY_EVENT_NAMES = [
     "issues",
     "issue_comment",

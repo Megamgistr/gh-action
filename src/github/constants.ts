@@ -16,7 +16,7 @@ We'd love your feedback — join our Discord to share bugs, ideas: [here](https:
             
 ${issueId ? `- 🔗 **Issue:** Fixes: #${issueId}` : ""}         
             
-'### 📊 Junie Summary'
+### 📊 Junie Summary:
 ${junieBody}
 `
 
@@ -24,4 +24,4 @@ export const PR_TITLE_TEMPLATE = (junieTitle: string) =>
     `[Junie]: ${junieTitle}`
 
 export const COMMIT_MESSAGE_TEMPLATE = (junieTitle: string, junieBody: string, issueId?: number) =>
-    `${issueId ? `[issue-${issueId}]\n\n` : ""}${junieTitle}${junieBody}`;
+    `${issueId ? `[issue-${issueId}]\n\n` : ""}${junieTitle}\n${junieBody}`;
