@@ -122,7 +122,7 @@ runs:
         include-hidden-files: true
 
     - name: Make Pull Request for the changes
-      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.CREATE_PR == 'true'
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.CREATE_PR == 'true' && steps.prepare.outputs.EJ_CAN_CREATE_PR == 'true'
       uses: peter-evans/create-pull-request@v7
       with:
           token: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}

@@ -15,6 +15,7 @@ export async function prepare({
                                   context,
                                   octokit,
                                   githubToken,
+                                  canCreatePR
                               }: PrepareJunieOptions) {
     if (!shouldHandle(context)) {
         console.log("No need to run junie")
@@ -36,7 +37,8 @@ export async function prepare({
         githubToken,
         junieInputs,
         branchInfo,
-        initCommentId
+        initCommentId,
+        canCreatePR
     })
 }
 

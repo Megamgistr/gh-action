@@ -2,7 +2,7 @@
 
 import * as core from "@actions/core";
 import {setupGitHubToken} from "../github/token";
-import {checkWritePermissions} from "../github/validation/permissions";
+import {checkWritePermissions, isTokenHasPRCreatePermission} from "../github/validation/permissions";
 import {createOctokit} from "../github/api/client";
 import {parseGitHubContext, isEntityContext } from "../github/context";
 import {prepare} from "../github/junie/prepare-junie";
@@ -27,10 +27,13 @@ async function run() {
             }
         }
 
+        const canCreatePR = await isTokenHasPRCreatePermission(octokit.rest, context)
+
         await prepare({
             context,
             octokit,
             githubToken,
+            canCreatePR
         });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);

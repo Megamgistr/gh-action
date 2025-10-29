@@ -71,6 +71,8 @@ export function exportPrepareOutputs(prepareOutputOptions: PrepareOutputOptions)
     if (prepareOutputOptions.initCommentId) {
         core.setOutput('EJ_INIT_COMMENT_ID', String(prepareOutputOptions.initCommentId));
     }
+
+    core.setOutput('EJ_CAN_CREATE_PR', prepareOutputOptions.canCreatePR);
     core.setOutput('PREPARE_OUTPUT', JSON.stringify(prepareOutputOptions));
 }
 
