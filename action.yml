@@ -125,6 +125,7 @@ runs:
       if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.ACTION_TO_DO == 'CREATE_PR'
       uses: peter-evans/create-pull-request@v7
       id: pull-request
+      continue-on-error: true
       with:
           token: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
           commit-message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
@@ -136,7 +137,7 @@ runs:
     - uses: EndBug/add-and-commit@v9
       name: Commit changes
       id: commit
-      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.ACTION_TO_DO == 'COMMIT_CHANGES'
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && (steps.junie-run-results.outputs.ACTION_TO_DO == 'COMMIT_CHANGES' || !steps.pull-request.outputs.pull-request-url)
       with:
         author_name: ${{ steps.prepare.outputs.EJ_ACTOR_NAME }}
         author_email: ${{ steps.prepare.outputs.EJ_ACTOR_EMAIL }}

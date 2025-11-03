@@ -43,7 +43,6 @@ export type PrepareJunieOptions = {
     context: GitHubContext;
     octokit: Octokits;
     githubToken: string;
-    canCreatePR: boolean;
 };
 
 export type PrepareOutputOptions = {
@@ -52,5 +51,4 @@ export type PrepareOutputOptions = {
     junieInputs: JunieRunInputs;
     branchInfo: BranchInfo;
     initCommentId?: number | null;
-    canCreatePR: boolean;
 };

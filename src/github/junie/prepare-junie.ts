@@ -14,8 +14,7 @@ import {checkContainsTrigger} from "../validation/trigger";
 export async function prepare({
                                   context,
                                   octokit,
-                                  githubToken,
-                                  canCreatePR
+                                  githubToken
                               }: PrepareJunieOptions) {
     if (!shouldHandle(context)) {
         console.log("No need to run junie")
@@ -38,7 +37,6 @@ export async function prepare({
         junieInputs,
         branchInfo,
         initCommentId,
-        canCreatePR
     })
 }
 

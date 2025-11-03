@@ -49,14 +49,12 @@ export async function handleResults() {
 async function getActionToDo(prepareOutput: PrepareOutputOptions): Promise<ActionType> {
     // Check if there are changed files
     const hasChangedFiles = await checkForChangedFiles();
-    const canCreatePr = prepareOutput.canCreatePR
 
 
     console.log(`Has changed files: ${hasChangedFiles}`);
     console.log(`Init comment ID: ${prepareOutput.initCommentId}`);
     console.log(`Base branch: ${prepareOutput.branchInfo.baseBranch}`);
     console.log(`Working branch: ${prepareOutput.branchInfo.workingBranch}`);
-    console.log(`Can create PR ${canCreatePr}`)
 
     // WRITE_COMMENT: no changed files AND has initCommentId
     if (!hasChangedFiles && prepareOutput.initCommentId) {
@@ -65,13 +63,13 @@ async function getActionToDo(prepareOutput: PrepareOutputOptions): Promise<Actio
     }
 
     // CREATE_PR: has changed files AND branches are different
-    if (hasChangedFiles && canCreatePr && prepareOutput.branchInfo.baseBranch !== prepareOutput.branchInfo.workingBranch) {
+    if (hasChangedFiles && prepareOutput.branchInfo.baseBranch !== prepareOutput.branchInfo.workingBranch) {
         console.log('Changes found and branches differ - will create PR');
         return ActionType.CREATE_PR;
     }
 
     // COMMIT_CHANGES: has changed files AND branches are the same
-    if (hasChangedFiles && (!canCreatePr || prepareOutput.branchInfo.baseBranch === prepareOutput.branchInfo.workingBranch)) {
+    if (hasChangedFiles &&  prepareOutput.branchInfo.baseBranch === prepareOutput.branchInfo.workingBranch) {
         console.log('Changes found and branches are same - will commit directly');
         return ActionType.COMMIT_CHANGES;
     }
