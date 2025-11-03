@@ -5,6 +5,7 @@ import {
 } from "../context";
 import * as core from "@actions/core";
 import {JunieRunInputs, JunieTask, PrepareOutputOptions} from "./types/junie";
+import {ActionType} from "../../entrypoints/handle-results";
 
 export async function prepareJunieInputs(
     context: GitHubContext,
@@ -76,12 +77,19 @@ export function exportPrepareOutputs(prepareOutputOptions: PrepareOutputOptions)
     core.setOutput('PREPARE_OUTPUT', JSON.stringify(prepareOutputOptions));
 }
 
-export function exportResultsOutputs(createPR: boolean,
-                                     commitMessage: string,
+export function exportResultsOutputs(actionToDo: ActionType,
+                                     junieTitle: string,
+                                     junieSummary: string,
+                                     commitMessage?: string,
                                      prTitle?: string,
                                      prBody?: string): void {
-    core.setOutput('CREATE_PR', createPR);
-    core.setOutput('COMMIT_MESSAGE', commitMessage);
+    core.setOutput('ACTION_TO_DO', actionToDo.toString());
+    core.setOutput('JUNIE_TITLE', junieTitle);
+    core.setOutput('JUNIE_SUMMARY', junieSummary);
+
+    if (commitMessage) {
+        core.setOutput('COMMIT_MESSAGE', commitMessage);
+    }
 
     if (prTitle && prBody) {
         core.setOutput('PR_TITLE', prTitle);

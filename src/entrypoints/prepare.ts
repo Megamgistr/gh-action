@@ -38,7 +38,7 @@ async function run() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         core.setFailed(`Prepare step failed with error: ${errorMessage}`);
-        core.setOutput("prepare_error", errorMessage);
+        core.setOutput("EXCEPTION", errorMessage);
         process.exit(1);
     }
 }

@@ -25,3 +25,11 @@ export const PR_TITLE_TEMPLATE = (junieTitle: string) =>
 
 export const COMMIT_MESSAGE_TEMPLATE = (junieTitle: string, junieBody: string, issueId?: number) =>
     `${issueId ? `[issue-${issueId}]\n\n` : ""}${junieTitle}\n${junieBody}`;
+
+export const SUCCESS_FEEDBACK_COMMENT = "Junie is successful finished!"
+
+export const PR_CREATED_FEEDBACK_COMMENT_TEMPLATE = (prLink: string) =>`${SUCCESS_FEEDBACK_COMMENT}\n PR link: ${prLink}`
+
+export const COMMIT_PUSHED_FEEDBACK_COMMENT_TEMPLATE = (commitSHA: string) => `${SUCCESS_FEEDBACK_COMMENT}\n Commit sha: ${commitSHA}`
+
+export const SUCCESS_FEEDBACK_COMMENT_WITH_RESULT = (junieTitle: string, junieBody: string) => `${SUCCESS_FEEDBACK_COMMENT}\n\nResult: ${junieTitle} \n ${junieBody}`

@@ -122,8 +122,9 @@ runs:
         include-hidden-files: true
 
     - name: Make Pull Request for the changes
-      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.CREATE_PR == 'true' && steps.prepare.outputs.EJ_CAN_CREATE_PR == 'true'
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.ACTION_TO_DO == 'CREATE_PR'
       uses: peter-evans/create-pull-request@v7
+      id: pull-request
       with:
           token: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
           commit-message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
@@ -134,9 +135,22 @@ runs:
 
     - uses: EndBug/add-and-commit@v9
       name: Commit changes
-      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.CREATE_PR == 'false'
+      id: commit
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.ACTION_TO_DO == 'COMMIT_CHANGES'
       with:
         author_name: ${{ steps.prepare.outputs.EJ_ACTOR_NAME }}
         author_email: ${{ steps.prepare.outputs.EJ_ACTOR_EMAIL }}
         new_branch: ${{ steps.prepare.outputs.EJ_WORKING_BRANCH }}
         message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
+
+    - name: Give success feedback
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && success()
+      shell: bash
+      run: |
+        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
+      env:
+        PREPARE_OUTPUT: ${{ steps.prepare.outputs.PREPARE_OUTPUT }}
+        PR_LINK: ${{ steps.pull-request.outputs.pull-request-url }}
+        COMMIT_SHA: ${{ steps.commit.outputs.commit_long_sha }}
+        JUNIE_TITLE: ${{ steps.junie-run-results.outputs.JUNIE_TITLE }}
+        JUNIE_BODY: ${{ steps.junie-run-results.outputs.JUNIE_BODY }}
