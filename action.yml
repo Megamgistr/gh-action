@@ -155,4 +155,4 @@ runs:
         PR_LINK: ${{ steps.pull-request.outputs.pull-request-url }}
         COMMIT_SHA: ${{ steps.commit.outputs.commit_long_sha }}
         JUNIE_TITLE: ${{ steps.junie-run-results.outputs.JUNIE_TITLE }}
-        JUNIE_BODY: ${{ steps.junie-run-results.outputs.JUNIE_BODY }}
+        JUNIE_SUMMARY: ${{ steps.junie-run-results.outputs.JUNIE_SUMMARY }}

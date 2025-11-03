@@ -15,7 +15,7 @@ export async function giveFeedback() {
         const prLink = process.env.PR_LINK
         const commitSHA = process.env.COMMIT_SHA
         const junieTitle = process.env.JUNIE_TITLE
-        const junieBody = process.env.JUNIE_BODY
+        const junieSummary = process.env.JUNIE_SUMMARY
         const initCommentId = prepareOutput.initCommentId
         const octokit = createOctokit(prepareOutput.githubToken);
 
@@ -48,7 +48,7 @@ export async function giveFeedback() {
                 break;
             case "WRITE_COMMENT":
                 console.log('No PR or commit - using Junie result');
-                feedbackBody = SUCCESS_FEEDBACK_COMMENT_WITH_RESULT(junieTitle || 'Task completed', junieBody || 'No additional details');
+                feedbackBody = SUCCESS_FEEDBACK_COMMENT_WITH_RESULT(junieTitle || 'Task completed', junieSummary || 'No additional details');
                 break;
         }
 
