@@ -137,7 +137,7 @@ runs:
     - uses: EndBug/add-and-commit@v9
       name: Commit changes
       id: commit
-      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && (steps.junie-run-results.outputs.ACTION_TO_DO == 'COMMIT_CHANGES' || (steps.junie-run-results.outputs.ACTION_TO_DO == 'CREATE_PR' && steps.pull-request.outcome == 'failure'))
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.ACTION_TO_DO == 'COMMIT_CHANGES'
       with:
         author_name: ${{ steps.prepare.outputs.EJ_ACTOR_NAME }}
         author_email: ${{ steps.prepare.outputs.EJ_ACTOR_EMAIL }}
@@ -151,6 +151,7 @@ runs:
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
       env:
         PREPARE_OUTPUT: ${{ steps.prepare.outputs.PREPARE_OUTPUT }}
+        ACTION_TO_DO: ${{ steps.junie-run-results.outputs.ACTION_TO_DO }}
         PR_LINK: ${{ steps.pull-request.outputs.pull-request-url }}
         COMMIT_SHA: ${{ steps.commit.outputs.commit_long_sha }}
         JUNIE_TITLE: ${{ steps.junie-run-results.outputs.JUNIE_TITLE }}

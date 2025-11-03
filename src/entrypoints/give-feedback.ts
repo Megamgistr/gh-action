@@ -4,12 +4,14 @@ import * as core from "@actions/core";
 import {
     PR_CREATED_FEEDBACK_COMMENT_TEMPLATE,
     COMMIT_PUSHED_FEEDBACK_COMMENT_TEMPLATE,
-    SUCCESS_FEEDBACK_COMMENT_WITH_RESULT
+    SUCCESS_FEEDBACK_COMMENT_WITH_RESULT, MANUALLY_PR_CREATE_FEEDBACK_COMMENT_TEMPLATE
 } from "../github/constants";
+import {ActionType} from "./handle-results";
 
 export async function giveFeedback() {
     try {
         const prepareOutput = JSON.parse(process.env.PREPARE_OUTPUT!) as PrepareOutputOptions
+        const actionToDo = process.env.ACTION_TO_DO as keyof typeof ActionType
         const prLink = process.env.PR_LINK
         const commitSHA = process.env.COMMIT_SHA
         const junieTitle = process.env.JUNIE_TITLE
@@ -27,32 +29,32 @@ export async function giveFeedback() {
         const ownerLogin = owner.login;
         const {baseBranch, workingBranch} = prepareOutput.branchInfo;
 
-        let feedbackBody: string;
+        let feedbackBody: string | undefined;
 
-        // Case 1: PR was created
-        if (prLink) {
-            console.log(`PR was created: ${prLink}`);
-            feedbackBody = PR_CREATED_FEEDBACK_COMMENT_TEMPLATE(prLink);
-        }
-        // Case 2: Commit was made
-        else if (commitSHA) {
-            // Case 2a: Commit to current branch (baseBranch == workingBranch)
-            if (workingBranch === baseBranch) {
+        switch (actionToDo) {
+            case "COMMIT_CHANGES":
                 console.log(`Commit pushed to current branch: ${commitSHA}`);
-                feedbackBody = COMMIT_PUSHED_FEEDBACK_COMMENT_TEMPLATE(commitSHA);
-            }
-            // Case 2b: Commit to working branch, but PR was not created
-            else {
-                console.log(`Commit pushed to working branch: ${commitSHA}, but PR was not created`);
-                // Generate link for creating PR from workingBranch to baseBranch
-                const createPRLink = `https://github.com/${ownerLogin}/${name}/compare/${baseBranch}...${workingBranch}`;
-                feedbackBody = `${COMMIT_PUSHED_FEEDBACK_COMMENT_TEMPLATE(commitSHA)}\n\n📝 You can create a PR manually: [Create Pull Request](${createPRLink})`;
-            }
+                feedbackBody = COMMIT_PUSHED_FEEDBACK_COMMENT_TEMPLATE(commitSHA!);
+                break;
+            case "CREATE_PR":
+                if (prLink) {
+                    console.log(`PR was created: ${prLink}`);
+                    feedbackBody = PR_CREATED_FEEDBACK_COMMENT_TEMPLATE(prLink);
+                } else {
+                    console.log(`Create PR manually`);
+                    const createPRLink = `https://github.com/${ownerLogin}/${name}/compare/${baseBranch}...${workingBranch}`;
+                    feedbackBody = MANUALLY_PR_CREATE_FEEDBACK_COMMENT_TEMPLATE(createPRLink);
+                }
+                break;
+            case "WRITE_COMMENT":
+                console.log('No PR or commit - using Junie result');
+                feedbackBody = SUCCESS_FEEDBACK_COMMENT_WITH_RESULT(junieTitle || 'Task completed', junieBody || 'No additional details');
+                break;
         }
-        // Case 3: No PR, no commit - use junie result
-        else {
-            console.log('No PR or commit - using Junie result');
-            feedbackBody = SUCCESS_FEEDBACK_COMMENT_WITH_RESULT(junieTitle || 'Task completed', junieBody || 'No additional details');
+
+        if (!feedbackBody) {
+            console.log('No feedback body - skipping feedback');
+            return;
         }
 
         // Update the initial comment with feedback
@@ -65,7 +67,6 @@ export async function giveFeedback() {
         });
 
         console.log('Feedback comment updated successfully');
-
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         core.setFailed(`Give feedback step failed with error: ${errorMessage}`);
