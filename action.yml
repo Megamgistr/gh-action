@@ -137,7 +137,7 @@ runs:
     - uses: EndBug/add-and-commit@v9
       name: Commit changes
       id: commit
-      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && (steps.junie-run-results.outputs.ACTION_TO_DO == 'COMMIT_CHANGES' || (steps.junie-run-results.outputs.ACTION_TO_DO == 'CREATE_PR' && !steps.pull-request.outputs.pull-request-url))
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && (steps.junie-run-results.outputs.ACTION_TO_DO == 'COMMIT_CHANGES' || (steps.junie-run-results.outputs.ACTION_TO_DO == 'CREATE_PR' && steps.pull-request.outputs.pull-request-url == ''))
       with:
         author_name: ${{ steps.prepare.outputs.EJ_ACTOR_NAME }}
         author_email: ${{ steps.prepare.outputs.EJ_ACTOR_EMAIL }}
