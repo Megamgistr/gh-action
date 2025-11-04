@@ -3,6 +3,7 @@ import {exportResultsOutputs} from "../github/junie/junie-inputs";
 import {PR_TITLE_TEMPLATE, PR_BODY_TEMPLATE, COMMIT_MESSAGE_TEMPLATE} from "../github/constants";
 import {isEntityContext} from "../github/context";
 import {execSync} from 'child_process';
+import * as core from "@actions/core";
 
 export enum ActionType {
     WRITE_COMMENT = 'WRITE_COMMENT',
@@ -12,37 +13,48 @@ export enum ActionType {
 }
 
 export async function handleResults() {
-    const prepareOutput = JSON.parse(process.env.PREPARE_OUTPUT!) as PrepareOutputOptions
-    console.log("Parsed prepare output:", prepareOutput);
-    const junieJsonOutput = JSON.parse(process.env.JSON_JUNIE_OUTPUT!) as any
-    console.log("Junie json output:", junieJsonOutput);
-    const actionToDo = await getActionToDo(prepareOutput);
-    console.log("Action to do:", actionToDo);
-    const title = junieJsonOutput.taskName
-    const body = junieJsonOutput.result
-    let issueId
-    if (isEntityContext(prepareOutput.context)) {
-        issueId = prepareOutput.context.entityNumber
-    }
-    const commitMessage = COMMIT_MESSAGE_TEMPLATE(title, body, issueId)
+    try {
+        const prepareOutput = JSON.parse(process.env.PREPARE_OUTPUT!) as PrepareOutputOptions
+        console.log("Parsed prepare output:", prepareOutput);
+        const junieJsonOutput = JSON.parse(process.env.JSON_JUNIE_OUTPUT!) as any
+        console.log("Junie json output:", junieJsonOutput);
+        const junieErrors = junieJsonOutput.errors
+        if (junieErrors && (junieErrors as string[]).length > 0) {
+            throw new Error(`Junie run failed with errors: ${junieErrors.join('\n')}`)
+        }
+        const actionToDo = await getActionToDo(prepareOutput);
+        console.log("Action to do:", actionToDo);
+        const title = junieJsonOutput.taskName
+        const body = junieJsonOutput.result
+        let issueId
+        if (isEntityContext(prepareOutput.context)) {
+            issueId = prepareOutput.context.entityNumber
+        }
+        const commitMessage = COMMIT_MESSAGE_TEMPLATE(title, body, issueId)
 
-    // Export outputs based on action type
-    switch (actionToDo) {
-        case ActionType.CREATE_PR:
-            exportResultsOutputs(actionToDo,
-                title,
-                body,
-                commitMessage,
-                PR_TITLE_TEMPLATE(title),
-                PR_BODY_TEMPLATE(body, issueId));
-            break;
-        case ActionType.COMMIT_CHANGES:
-            exportResultsOutputs(actionToDo, title, body, commitMessage);
-            break;
-        case ActionType.WRITE_COMMENT:
-        case ActionType.NOTHING:
-            exportResultsOutputs(actionToDo, title, body);
-            break;
+        // Export outputs based on action type
+        switch (actionToDo) {
+            case ActionType.CREATE_PR:
+                exportResultsOutputs(actionToDo,
+                    title,
+                    body,
+                    commitMessage,
+                    PR_TITLE_TEMPLATE(title),
+                    PR_BODY_TEMPLATE(body, issueId));
+                break;
+            case ActionType.COMMIT_CHANGES:
+                exportResultsOutputs(actionToDo, title, body, commitMessage);
+                break;
+            case ActionType.WRITE_COMMENT:
+            case ActionType.NOTHING:
+                exportResultsOutputs(actionToDo, title, body);
+                break;
+        }
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        core.setFailed(`Handle results step failed with error: ${errorMessage}`);
+        core.setOutput("EXCEPTION", errorMessage);
+        process.exit(1);
     }
 }
 
@@ -69,7 +81,7 @@ async function getActionToDo(prepareOutput: PrepareOutputOptions): Promise<Actio
     }
 
     // COMMIT_CHANGES: has changed files AND branches are the same
-    if (hasChangedFiles &&  prepareOutput.branchInfo.baseBranch === prepareOutput.branchInfo.workingBranch) {
+    if (hasChangedFiles && prepareOutput.branchInfo.baseBranch === prepareOutput.branchInfo.workingBranch) {
         console.log('Changes found and branches are same - will commit directly');
         return ActionType.COMMIT_CHANGES;
     }
