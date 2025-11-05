@@ -51,7 +51,7 @@ async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubC
         if (isPullRequestEvent(context)
             || isPullRequestReviewEvent(context)
             || isPullRequestReviewCommentEvent(context)) {
-            targetBranch = context.payload.pull_request.base.ref
+            targetBranch = context.payload.pull_request.head.ref;
             console.log(`Updated target branch: ${targetBranch}`);
             state = context.payload.pull_request.state;
         }
