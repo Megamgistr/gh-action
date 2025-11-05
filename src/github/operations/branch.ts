@@ -69,7 +69,7 @@ async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubC
             console.log(`Successfully checked out PR branch for PR #${entityNumber}`);
 
             return {
-                baseBranch: baseBranch,
+                baseBranch: targetBranch!,
                 workingBranch: targetBranch!,
             };
         }
