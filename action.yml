@@ -153,7 +153,7 @@ runs:
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
       env:
-        IS_JOB_FAILED: ${{ job.status == 'failure' }}
+        JOB_STATUS: ${{ job.status }}
         INIT_COMMENT_ID: ${{ steps.prepare.outputs.INIT_COMMENT_ID }}
         GITHUB_TOKEN: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
         PARSED_CONTEXT: ${{ steps.prepare.outputs.PARSED_CONTEXT }}
