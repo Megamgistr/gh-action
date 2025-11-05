@@ -52,8 +52,7 @@ function getSuccessBody(repoFullName: string): string | undefined {
 
 export async function giveFeedback() {
     try {
-        const jobStatus = process.env.JOB_STATUS;
-        console.log(`Job status: ${jobStatus}`);
+        const isJobFailed = process.env.IS_JOB_FAILED === 'true';
         const initCommentId = process.env.INIT_COMMENT_ID!;
         const parsedContext = JSON.parse(process.env.PARSED_CONTEXT!) as GitHubContext;
         const githubToken = process.env.GITHUB_TOKEN!;
@@ -61,7 +60,7 @@ export async function giveFeedback() {
         const ownerLogin = owner.login;
         const repoFullName = `${ownerLogin}/${name}`;
         let feedbackBody: string | undefined;
-        if (jobStatus) {
+        if (isJobFailed) {
             feedbackBody = getFailedBody(ownerLogin, name, parsedContext.runId)
         } else {
             feedbackBody = getSuccessBody(repoFullName)
