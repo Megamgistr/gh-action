@@ -9,11 +9,13 @@ import {setupBranch} from "../operations/branch";
 import {PrepareJunieOptions} from "./types/junie";
 import {prepareJunieInputs} from "./junie-inputs";
 import {checkContainsTrigger} from "../validation/trigger";
+import {gitAuth} from "../operations/auth";
 
 
 export async function prepare({
                                   context,
-                                  octokit
+                                  octokit,
+                                  githubToken,
                               }: PrepareJunieOptions) {
     if (!shouldHandle(context)) {
         console.log("No need to run junie")
@@ -21,6 +23,8 @@ export async function prepare({
         return;
     }
     core.setOutput('SHOULD_SKIP', 'false');
+
+    await gitAuth(octokit, githubToken, context)
 
     if (isEntityContext(context)) {
         await checkHumanActor(octokit.rest, context);

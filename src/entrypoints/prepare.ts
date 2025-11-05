@@ -28,7 +28,8 @@ async function run() {
 
         await prepare({
             context,
-            octokit
+            octokit,
+            githubToken
         });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);

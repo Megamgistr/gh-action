@@ -35,4 +35,5 @@ export interface TextTask {
 export type PrepareJunieOptions = {
     context: GitHubContext;
     octokit: Octokits;
+    githubToken: string;
 };

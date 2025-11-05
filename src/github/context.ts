@@ -9,7 +9,7 @@ import type {
     PullRequestReviewCommentEvent,
     WorkflowRunEvent,
 } from "@octokit/webhooks-types";
-import {DEFAULT_TRIGGER_PHRASE, JUNIE_APP_ID, JUNIE_APP_USERNAME} from "./constants";
+import {DEFAULT_TRIGGER_PHRASE} from "./constants";
 
 export type WorkflowDispatchEvent = {
     action?: never;
@@ -84,8 +84,8 @@ type BaseContext = {
         assigneeTrigger: string;
         labelTrigger: string;
         workingBranch?: string;
-        botId: string;
-        botName: string;
+        botId?: string;
+        botName?: string;
     };
 };
 
@@ -128,8 +128,8 @@ export function parseGitHubContext(): GitHubContext {
             labelTrigger: process.env.LABEL_TRIGGER ?? "",
             baseBranch: process.env.BASE_BRANCH,
             targetBranch: process.env.TARGET_BRANCH,
-            botId: String(JUNIE_APP_ID),
-            botName: JUNIE_APP_USERNAME,
+            botId: process.env.BOT_ID,
+            botName: process.env.BOT_NAME,
         },
     };
 

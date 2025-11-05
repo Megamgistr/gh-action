@@ -41,6 +41,12 @@ inputs:
   github_token:
     description: "GitHub token with repo and pull request permissions (optional if using GitHub App)"
     required: false
+  bot_id:
+    description: "GitHub App ID (optional if github_token is GitHub App token)"
+    required: false
+  bot_name:
+    description: "GitHub App name (optional if github_token is GitHub App token)"
+    required: false
 
 outputs:
   branch_name:
@@ -76,6 +82,8 @@ runs:
         OVERRIDE_GITHUB_TOKEN: ${{ inputs.github_token }}
         DEFAULT_WORKFLOW_TOKEN: ${{ github.token }}
         ALL_INPUTS: ${{ toJson(inputs) }}
+        BOT_ID: ${{ inputs.bot_id }}
+        BOT_NAME: ${{ inputs.bot_name }}
 
     - name: Install Junie
       if: steps.prepare.outputs.SHOULD_SKIP != 'true'
