@@ -1,4 +1,5 @@
 import * as github from "@actions/github";
+import * as core from "@actions/core";
 import type {
     IssuesEvent,
     IssuesAssignedEvent,
@@ -132,89 +133,103 @@ export function parseGitHubContext(): GitHubContext {
         },
     };
 
+    let parsedContext: GitHubContext;
     switch (context.eventName) {
         case "issues": {
             const payload = context.payload as IssuesEvent;
-            return {
+            parsedContext = {
                 ...commonFields,
                 eventName: context.eventName,
                 payload,
                 entityNumber: payload.issue.number,
                 isPR: false,
             };
+            break;
         }
         case "issue_comment": {
             const payload = context.payload as IssueCommentEvent;
-            return {
+            parsedContext =  {
                 ...commonFields,
                 eventName: context.eventName,
                 payload,
                 entityNumber: payload.issue.number,
                 isPR: Boolean(payload.issue.pull_request),
             };
+            break;
         }
         case "pull_request":
         case "pull_request_target": {
             const payload = context.payload as PullRequestEvent;
-            return {
+            parsedContext =  {
                 ...commonFields,
                 eventName: "pull_request",
                 payload,
                 entityNumber: payload.pull_request.number,
                 isPR: true,
             };
+            break;
         }
         case "pull_request_review": {
             const payload = context.payload as PullRequestReviewEvent;
-            return {
+            parsedContext = {
                 ...commonFields,
                 eventName: context.eventName,
                 payload,
                 entityNumber: payload.pull_request.number,
                 isPR: true,
             };
+            break;
         }
         case "pull_request_review_comment": {
             const payload = context.payload as PullRequestReviewCommentEvent;
-            return {
+            parsedContext =  {
                 ...commonFields,
                 eventName: context.eventName,
                 payload,
                 entityNumber: payload.pull_request.number,
                 isPR: true,
             };
+            break
         }
         case "workflow_dispatch": {
-            return {
+            parsedContext = {
                 ...commonFields,
                 eventName: context.eventName,
                 payload: context.payload as unknown as WorkflowDispatchEvent,
             };
+            break;
         }
         case "repository_dispatch": {
-            return {
+            parsedContext =  {
                 ...commonFields,
                 eventName: context.eventName,
                 payload: context.payload as unknown as RepositoryDispatchEvent,
             };
+            break;
         }
         case "schedule": {
-            return {
+            parsedContext = {
                 ...commonFields,
                 eventName: context.eventName,
                 payload: context.payload as unknown as ScheduleEvent,
             };
+            break
         }
         case "workflow_run": {
-            return {
+            parsedContext =  {
                 ...commonFields,
                 eventName: context.eventName,
                 payload: context.payload as unknown as WorkflowRunEvent,
             };
+            break;
         }
         default:
             throw new Error(`Unsupported event type: ${context.eventName}`);
     }
+    core.setOutput('ACTOR_NAME', parsedContext.actor);
+    core.setOutput('ACTOR_EMAIL', parsedContext.actorEmail);
+    core.setOutput("PARSED_CONTEXT", JSON.stringify(parsedContext));
+    return parsedContext;
 }
 
 export function isIssuesEvent(

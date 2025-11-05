@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import * as core from "@actions/core";
 import {createJobRunLink, createCommentBody} from "./common";
 import {
     isPullRequestReviewCommentEvent,
@@ -37,7 +38,10 @@ export async function writeInitialFeedbackComment(
             });
         }
         console.log(`Created initial comment with ID: ${response.data.id}`);
-        return response.data;
+        const initCommentId =  response.data.id;
+        core.setOutput('INIT_COMMENT_ID', initCommentId);
+
+        return initCommentId;
     } catch (error) {
         console.error("Error in initial comment:", error);
         throw error;

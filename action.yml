@@ -45,7 +45,7 @@ inputs:
 outputs:
   branch_name:
     description: "Junie working branch"
-    value: ${{ steps.prepare.outputs.EJ_WORKING_BRANCH }}
+    value: ${{ steps.prepare.outputs.WORKING_BRANCH }}
 
 runs:
   using: "composite"
@@ -108,7 +108,10 @@ runs:
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/handle-results.ts
       env:
         JSON_JUNIE_OUTPUT: ${{ steps.junie-run.outputs.json_output }}
-        PREPARE_OUTPUT: ${{ steps.prepare.outputs.PREPARE_OUTPUT }}
+        PARSED_CONTEXT: ${{ steps.prepare.outputs.PARSED_CONTEXT }}
+        INIT_COMMENT_ID: ${{ steps.prepare.outputs.INIT_COMMENT_ID }}
+        BASE_BRANCH: ${{ steps.prepare.outputs.BASE_BRANCH }}
+        WORKING_BRANCH: ${{ steps.prepare.outputs.WORKING_BRANCH }}
         WORKING_DIR: ${{ inputs.junie_work_dir }}
 
     - name: Upload Junie working directory as artifact
@@ -131,28 +134,34 @@ runs:
           commit-message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
           title: ${{ steps.junie-run-results.outputs.PR_TITLE }}
           body: ${{ steps.junie-run-results.outputs.PR_BODY }}
-          branch: ${{ steps.prepare.outputs.EJ_WORKING_BRANCH }}
-          base: ${{ steps.prepare.outputs.EJ_BASE_BRANCH }}
+          branch: ${{ steps.prepare.outputs.WORKING_BRANCH }}
+          base: ${{ steps.prepare.outputs.BASE_BRANCH }}
 
     - uses: EndBug/add-and-commit@v9
       name: Commit changes
       id: commit
       if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.ACTION_TO_DO == 'COMMIT_CHANGES'
       with:
-        author_name: ${{ steps.prepare.outputs.EJ_ACTOR_NAME }}
-        author_email: ${{ steps.prepare.outputs.EJ_ACTOR_EMAIL }}
-        new_branch: ${{ steps.prepare.outputs.EJ_WORKING_BRANCH }}
+        author_name: ${{ steps.prepare.outputs.ACTOR_NAME }}
+        author_email: ${{ steps.prepare.outputs.ACTOR_EMAIL }}
+        new_branch: ${{ steps.prepare.outputs.WORKING_BRANCH }}
         message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
 
-    - name: Give success feedback
-      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && success()
+    - name: Give feedback
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.prepare.outputs.INIT_COMMENT_ID && always()
       shell: bash
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
       env:
-        PREPARE_OUTPUT: ${{ steps.prepare.outputs.PREPARE_OUTPUT }}
+        IS_JOB_FAILED: ${{ job.status == 'failure' }}
+        INIT_COMMENT_ID: ${{ steps.prepare.outputs.INIT_COMMENT_ID }}
+        GITHUB_TOKEN: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
+        PARSED_CONTEXT: ${{ steps.prepare.outputs.PARSED_CONTEXT }}
+        WORKING_BRANCH: ${{ steps.prepare.outputs.WORKING_BRANCH }}
+        BASE_BRANCH: ${{ steps.prepare.outputs.BASE_BRANCH }}
         ACTION_TO_DO: ${{ steps.junie-run-results.outputs.ACTION_TO_DO }}
         PR_LINK: ${{ steps.pull-request.outputs.pull-request-url }}
         COMMIT_SHA: ${{ steps.commit.outputs.commit_long_sha }}
         JUNIE_TITLE: ${{ steps.junie-run-results.outputs.JUNIE_TITLE }}
         JUNIE_SUMMARY: ${{ steps.junie-run-results.outputs.JUNIE_SUMMARY }}
+        ERROR: ${{ steps.prepare.outputs.ERROR || steps.junie-run-results.outputs.ERROR }}

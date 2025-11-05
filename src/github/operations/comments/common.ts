@@ -19,10 +19,9 @@ export function createBranchLink(
 }
 
 export function createCommentBody(
-  jobRunLink: string,
-  branchLink: string = "",
+  jobRunLink: string
 ): string {
   return `${INIT_COMMENT_BODY}
 
-${jobRunLink}${branchLink}`;
+${jobRunLink}`;
 }

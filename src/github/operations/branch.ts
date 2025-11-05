@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import * as core from "@actions/core";
 import {$} from "bun";
 import {
     AutomationContext,
@@ -84,17 +85,19 @@ async function setupBrunchNonEntityEvent(baseBranch: string, context: Automation
 export async function setupBranch(
     octokits: Octokits,
     context: GitHubContext,
-): Promise<BranchInfo> {
+) {
     const {owner, name} = context.payload.repository;
     const login = owner.login
     const baseBranch = context.inputs.baseBranch || (await octokits.rest.repos.get({
         owner: login,
         repo: name,
     })).data.default_branch;
-
+    let branchInfo: BranchInfo
     if (isEntityContext(context)) {
-        return setupBrunchEntityEvent(baseBranch, context)
+        branchInfo = await setupBrunchEntityEvent(baseBranch, context)
     } else {
-        return setupBrunchNonEntityEvent(baseBranch, context)
+        branchInfo =  await setupBrunchNonEntityEvent(baseBranch, context)
     }
+    core.setOutput('BASE_BRANCH', branchInfo.baseBranch);
+    core.setOutput('WORKING_BRANCH', branchInfo.workingBranch);
 }

@@ -1,6 +1,5 @@
 import {GitHubContext} from "../../context";
 import {Octokits} from "../../api/client";
-import {BranchInfo} from "../../operations/branch";
 
 
 export interface JunieTask {
@@ -32,23 +31,8 @@ export interface TextTask {
     text: string;
 }
 
-export interface JunieRunInputs {
-    junieIngrazzioToken: string;
-    junieTask: JunieTask;
-    junieTaskText?: string | null;
-}
-
 
 export type PrepareJunieOptions = {
     context: GitHubContext;
     octokit: Octokits;
-    githubToken: string;
-};
-
-export type PrepareOutputOptions = {
-    context: GitHubContext;
-    githubToken: string;
-    junieInputs: JunieRunInputs;
-    branchInfo: BranchInfo;
-    initCommentId?: number | null;
 };

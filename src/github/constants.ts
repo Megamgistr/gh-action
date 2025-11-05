@@ -28,6 +28,13 @@ export const COMMIT_MESSAGE_TEMPLATE = (junieTitle: string, junieBody: string, i
 
 export const SUCCESS_FEEDBACK_COMMENT = "Junie is successful finished!"
 
+export const ERROR_FEEDBACK_COMMENT_TEMPLATE = (details: string, jobLink: string) => `Junie is failed!
+
+Details:${details}
+
+${jobLink}
+`
+
 export const PR_CREATED_FEEDBACK_COMMENT_TEMPLATE = (prLink: string) =>`${SUCCESS_FEEDBACK_COMMENT}\n PR link: ${prLink}`
 
 export const MANUALLY_PR_CREATE_FEEDBACK_COMMENT_TEMPLATE = (createPRLink: string) => `${SUCCESS_FEEDBACK_COMMENT}\n\nYou can create a PR manually: [Create Pull Request](${createPRLink})`

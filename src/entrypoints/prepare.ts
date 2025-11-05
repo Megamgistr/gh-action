@@ -12,7 +12,6 @@ async function run() {
         const githubToken = await setupGitHubToken();
         const octokit = createOctokit(githubToken);
         const context = parseGitHubContext();
-
         console.log("Parsed context:", context);
 
         if (isEntityContext(context)) {
@@ -29,8 +28,7 @@ async function run() {
 
         await prepare({
             context,
-            octokit,
-            githubToken,
+            octokit
         });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);

@@ -1,7 +1,6 @@
-import {PrepareOutputOptions} from "../github/junie/types/junie";
 import {exportResultsOutputs} from "../github/junie/junie-inputs";
 import {PR_TITLE_TEMPLATE, PR_BODY_TEMPLATE, COMMIT_MESSAGE_TEMPLATE} from "../github/constants";
-import {isEntityContext} from "../github/context";
+import {GitHubContext, isEntityContext} from "../github/context";
 import {execSync} from 'child_process';
 import * as core from "@actions/core";
 
@@ -14,28 +13,26 @@ export enum ActionType {
 
 export async function handleResults() {
     try {
-        const prepareOutput = JSON.parse(process.env.PREPARE_OUTPUT!) as PrepareOutputOptions
-        console.log("Parsed prepare output:", prepareOutput);
         const junieJsonOutput = JSON.parse(process.env.JSON_JUNIE_OUTPUT!) as any
+        const context = JSON.parse(process.env.PARSED_CONTEXT!) as GitHubContext
         console.log("Junie json output:", junieJsonOutput);
         const junieErrors = junieJsonOutput.errors
         if (junieErrors && (junieErrors as string[]).length > 0) {
             throw new Error(`Junie run failed with errors: ${junieErrors.join('\n')}`)
         }
-        const actionToDo = await getActionToDo(prepareOutput);
-        console.log("Action to do:", actionToDo);
+        const actionToDo = await getActionToDo();
         const title = junieJsonOutput.taskName
         const body = junieJsonOutput.result
         let issueId
-        if (isEntityContext(prepareOutput.context)) {
-            issueId = prepareOutput.context.entityNumber
+        if (isEntityContext(context)) {
+            issueId = context.entityNumber
         }
         const commitMessage = COMMIT_MESSAGE_TEMPLATE(title, body, issueId)
 
         // Export outputs based on action type
         switch (actionToDo) {
             case ActionType.CREATE_PR:
-                exportResultsOutputs(actionToDo,
+                exportResultsOutputs(
                     title,
                     body,
                     commitMessage,
@@ -43,11 +40,11 @@ export async function handleResults() {
                     PR_BODY_TEMPLATE(body, issueId));
                 break;
             case ActionType.COMMIT_CHANGES:
-                exportResultsOutputs(actionToDo, title, body, commitMessage);
+                exportResultsOutputs(title, body, commitMessage);
                 break;
             case ActionType.WRITE_COMMENT:
             case ActionType.NOTHING:
-                exportResultsOutputs(actionToDo, title, body);
+                exportResultsOutputs(title, body);
                 break;
         }
     } catch (error) {
@@ -58,36 +55,44 @@ export async function handleResults() {
     }
 }
 
-async function getActionToDo(prepareOutput: PrepareOutputOptions): Promise<ActionType> {
+async function getActionToDo(): Promise<ActionType> {
     // Check if there are changed files
     const hasChangedFiles = await checkForChangedFiles();
+    const initCommentId = process.env.INIT_COMMENT_ID;
+    const baseBranch = process.env.BASE_BRANCH!;
+    const workingBranch = process.env.WORKING_BRANCH!;
 
 
     console.log(`Has changed files: ${hasChangedFiles}`);
-    console.log(`Init comment ID: ${prepareOutput.initCommentId}`);
-    console.log(`Base branch: ${prepareOutput.branchInfo.baseBranch}`);
-    console.log(`Working branch: ${prepareOutput.branchInfo.workingBranch}`);
+    console.log(`Init comment ID: ${initCommentId}`);
+    console.log(`Base branch: ${baseBranch}`);
+    console.log(`Working branch: ${workingBranch}`);
 
+    let action: ActionType
     // WRITE_COMMENT: no changed files AND has initCommentId
-    if (!hasChangedFiles && prepareOutput.initCommentId) {
+    if (!hasChangedFiles && initCommentId) {
         console.log('No changes found but has comment ID - will write comment');
-        return ActionType.WRITE_COMMENT;
+        action = ActionType.WRITE_COMMENT;
     }
 
     // CREATE_PR: has changed files AND branches are different
-    if (hasChangedFiles && prepareOutput.branchInfo.baseBranch !== prepareOutput.branchInfo.workingBranch) {
+    if (hasChangedFiles && baseBranch !== workingBranch) {
         console.log('Changes found and branches differ - will create PR');
-        return ActionType.CREATE_PR;
+        action = ActionType.CREATE_PR;
     }
 
     // COMMIT_CHANGES: has changed files AND branches are the same
-    if (hasChangedFiles && prepareOutput.branchInfo.baseBranch === prepareOutput.branchInfo.workingBranch) {
+    if (hasChangedFiles && baseBranch === workingBranch) {
         console.log('Changes found and branches are same - will commit directly');
-        return ActionType.COMMIT_CHANGES;
+        action = ActionType.COMMIT_CHANGES;
     }
 
     console.log('No specific action matched - do nothing');
-    return ActionType.NOTHING;
+    action = ActionType.NOTHING;
+
+    console.log("Action to do:", action);
+    core.setOutput('ACTION_TO_DO', action);
+    return action;
 }
 
 async function checkForChangedFiles(): Promise<boolean> {
