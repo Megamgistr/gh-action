@@ -28,5 +28,4 @@ jobs:
         id: claude
         uses: ./.
         with:
-          junie_api_key: "test-token"
-#          junie_api_key: ${{ secrets.JUNIE_API_KEY }}
+          junie_api_key: ${{ secrets.JUNIE_API_KEY }}
