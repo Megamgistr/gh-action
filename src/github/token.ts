@@ -8,10 +8,10 @@ export async function setupGitHubToken(): Promise<string> {
     if (providedToken) {
         console.log("Using provided OVERRIDE_GITHUB_TOKEN for authentication");
         token =  providedToken;
+    } else {
+        console.log("Using DEFAULT_WORKFLOW_TOKEN for authentication");
+        token =  process.env.DEFAULT_WORKFLOW_TOKEN!;
     }
-
-    console.log("Using DEFAULT_WORKFLOW_TOKEN for authentication");
-    token =  process.env.DEFAULT_WORKFLOW_TOKEN!;
 
     core.setOutput("EJ_AUTH_GITHUB_TOKEN", token);
     return token;

@@ -38,7 +38,7 @@ inputs:
   junie_api_key:
     description: "Junie API key"
     required: false
-  github_token:
+  custom_github_token:
     description: "GitHub token with repo and pull request permissions (optional if using GitHub App)"
     required: false
   bot_id:
@@ -79,7 +79,7 @@ runs:
         LABEL_TRIGGER: ${{ inputs.label_trigger }}
         BASE_BRANCH: ${{ inputs.base_branch || github.base_ref  }}
         TARGET_BRANCH: ${{ github.head_ref }}
-        OVERRIDE_GITHUB_TOKEN: ${{ inputs.github_token }}
+        OVERRIDE_GITHUB_TOKEN: ${{ inputs.custom_github_token }}
         DEFAULT_WORKFLOW_TOKEN: ${{ github.token }}
         ALL_INPUTS: ${{ toJson(inputs) }}
         BOT_ID: ${{ inputs.bot_id }}

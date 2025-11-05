@@ -24,7 +24,7 @@ export async function prepare({
     }
     core.setOutput('SHOULD_SKIP', 'false');
 
-    await gitAuth(octokit, githubToken, context)
+    await gitAuth(githubToken, context)
 
     if (isEntityContext(context)) {
         await checkHumanActor(octokit.rest, context);
