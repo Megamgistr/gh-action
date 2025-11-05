@@ -46,11 +46,13 @@ async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubC
     const isPR = context.isPR;
     if (isPR) {
         let targetBranch = context.inputs.targetBranch
+        console.log(`Init target branch: ${targetBranch}`);
         let state: string = "";
         if (isPullRequestEvent(context)
             || isPullRequestReviewEvent(context)
             || isPullRequestReviewCommentEvent(context)) {
             targetBranch = context.payload.pull_request.base.ref
+            console.log(`Updated target branch: ${targetBranch}`);
             state = context.payload.pull_request.state;
         }
         if (isIssueCommentEvent(context)) {
@@ -92,6 +94,8 @@ export async function setupBranch(
         owner: login,
         repo: name,
     })).data.default_branch;
+    console.log(`Base branch: ${baseBranch}. From input ${context.inputs.baseBranch}`);
+
     let branchInfo: BranchInfo
     if (isEntityContext(context)) {
         branchInfo = await setupBrunchEntityEvent(baseBranch, context)
