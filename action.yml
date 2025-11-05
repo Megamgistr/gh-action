@@ -183,4 +183,4 @@ runs:
         INIT_COMMENT_ID: ${{ steps.prepare.outputs.INIT_COMMENT_ID }}
         GITHUB_TOKEN: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
         PARSED_CONTEXT: ${{ steps.prepare.outputs.PARSED_CONTEXT }}
-        ERROR: ${{ steps.prepare.outputs.ERROR || steps.junie-run-results.outputs.ERROR }}
+        ERROR: ${{ steps.prepare.outputs.EXCEPTION || steps.junie-run-results.outputs.EXCEPTION }}
