@@ -69,26 +69,19 @@ async function getActionToDo(): Promise<ActionType> {
     console.log(`Working branch: ${workingBranch}`);
 
     let action: ActionType
-    // WRITE_COMMENT: no changed files AND has initCommentId
     if (!hasChangedFiles && initCommentId) {
         console.log('No changes found but has comment ID - will write comment');
         action = ActionType.WRITE_COMMENT;
-    }
-
-    // CREATE_PR: has changed files AND branches are different
-    if (hasChangedFiles && baseBranch !== workingBranch) {
+    } else if (hasChangedFiles && baseBranch !== workingBranch) {
         console.log('Changes found and branches differ - will create PR');
         action = ActionType.CREATE_PR;
-    }
-
-    // COMMIT_CHANGES: has changed files AND branches are the same
-    if (hasChangedFiles && baseBranch === workingBranch) {
+    } else if (hasChangedFiles && baseBranch === workingBranch) {
         console.log('Changes found and branches are same - will commit directly');
         action = ActionType.COMMIT_CHANGES;
+    } else {
+        console.log('No specific action matched - do nothing');
+        action = ActionType.NOTHING;
     }
-
-    console.log('No specific action matched - do nothing');
-    action = ActionType.NOTHING;
 
     console.log("Action to do:", action);
     core.setOutput('ACTION_TO_DO', action);
