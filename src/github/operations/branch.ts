@@ -85,16 +85,8 @@ async function setupBrunchNonEntityEvent(baseBranch: string, context: Automation
     return await createNewBranch(baseBranch, branchName)
 }
 
-export async function setupBranch(
-    octokits: Octokits,
-    context: GitHubContext,
-) {
-    const {owner, name} = context.payload.repository;
-    const login = owner.login
-    const baseBranch = context.inputs.baseBranch || (await octokits.rest.repos.get({
-        owner: login,
-        repo: name,
-    })).data.default_branch;
+export async function setupBranch(context: GitHubContext) {
+    const baseBranch = context.inputs.baseBranch ||  context.payload.repository.default_branch
     console.log(`Base branch: ${baseBranch}. From input ${context.inputs.baseBranch}`);
 
     let branchInfo: BranchInfo

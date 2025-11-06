@@ -30,7 +30,7 @@ export async function prepare({
         await checkHumanActor(octokit.rest, context);
         await writeInitialFeedbackComment(octokit.rest, context);
     }
-    await setupBranch(octokit, context);
+    await setupBranch(context);
     await prepareJunieInputs(context)
 }
 

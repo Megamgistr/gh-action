@@ -1,55 +1,21 @@
 import * as github from "@actions/github";
 import * as core from "@actions/core";
-import type {
+import {
     IssuesEvent,
     IssuesAssignedEvent,
     IssueCommentEvent,
     PullRequestEvent,
     PullRequestReviewEvent,
     PullRequestReviewCommentEvent,
-    WorkflowRunEvent,
+    WorkflowRunEvent, WorkflowDispatchEvent, RepositoryDispatchEvent, Repository,
 } from "@octokit/webhooks-types";
 import {DEFAULT_TRIGGER_PHRASE} from "./constants";
 
-export type WorkflowDispatchEvent = {
-    action?: never;
-    inputs?: Record<string, any>;
-    ref?: string;
-    repository: {
-        name: string;
-        owner: {
-            login: string;
-        };
-    };
-    sender: {
-        login: string;
-    };
-    workflow: string;
-};
-
-export type RepositoryDispatchEvent = {
-    action: string;
-    client_payload?: Record<string, any>;
-    repository: {
-        name: string;
-        owner: {
-            login: string;
-        };
-    };
-    sender: {
-        login: string;
-    };
-};
 
 export type ScheduleEvent = {
     action?: never;
     schedule?: string;
-    repository: {
-        name: string;
-        owner: {
-            login: string;
-        };
-    };
+    repository: Repository;
 };
 
 const ENTITY_EVENT_NAMES = [
@@ -114,6 +80,7 @@ export type GitHubContext = ParsedGitHubContext | AutomationContext;
 
 export function parseGitHubContext(): GitHubContext {
     const context = github.context;
+    console.log(`RAW context: ${JSON.stringify(context)}`);
     const commonFields = {
         runId: process.env.GITHUB_RUN_ID!,
         eventAction: context.payload.action,
