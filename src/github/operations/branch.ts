@@ -41,24 +41,28 @@ async function createNewBranch(baseBranch: string, branchName: string) {
     }
 }
 
-async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubContext) {
+async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubContext, octokit: Octokits) {
     const entityNumber = context.entityNumber;
     const isPR = context.isPR;
     if (isPR) {
-        let targetBranch = context.inputs.targetBranch
-        console.log(`Init target branch: ${targetBranch}`);
-        let state: string = "";
+        let targetBranch = ""
+        let state = "";
         if (isPullRequestEvent(context)
             || isPullRequestReviewEvent(context)
             || isPullRequestReviewCommentEvent(context)) {
             targetBranch = context.payload.pull_request.head.ref;
-            console.log(`Updated target branch: ${targetBranch}`);
             state = context.payload.pull_request.state;
         }
         if (isIssueCommentEvent(context)) {
-            console.log(`Issue comment event, using PR branch ${context.payload.issue.pull_request}`);
+            targetBranch = (await octokit.rest.pulls.get({
+                owner: context.payload.repository.owner.login,
+                repo: context.payload.repository.name,
+                pull_number: entityNumber,
+            })).data.head.ref;
             state = context.payload.issue.state;
         }
+
+        console.log(`Target branch: ${targetBranch}`);
 
         if (state === "CLOSED" || state === "MERGED") {
             console.log(`PR #${entityNumber} is ${state}, creating new branch`);
@@ -85,13 +89,13 @@ async function setupBrunchNonEntityEvent(baseBranch: string, context: Automation
     return await createNewBranch(baseBranch, branchName)
 }
 
-export async function setupBranch(context: GitHubContext) {
+export async function setupBranch(octokit: Octokits, context: GitHubContext) {
     const baseBranch = context.inputs.baseBranch ||  context.payload.repository.default_branch
     console.log(`Base branch: ${baseBranch}. From input ${context.inputs.baseBranch}`);
 
     let branchInfo: BranchInfo
     if (isEntityContext(context)) {
-        branchInfo = await setupBrunchEntityEvent(baseBranch, context)
+        branchInfo = await setupBrunchEntityEvent(baseBranch, context, octokit)
     } else {
         branchInfo =  await setupBrunchNonEntityEvent(baseBranch, context)
     }

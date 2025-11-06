@@ -80,7 +80,6 @@ export type GitHubContext = ParsedGitHubContext | AutomationContext;
 
 export function parseGitHubContext(): GitHubContext {
     const context = github.context;
-    console.log(`RAW context: ${JSON.stringify(context)}`);
     const commonFields = {
         runId: process.env.GITHUB_RUN_ID!,
         eventAction: context.payload.action,
