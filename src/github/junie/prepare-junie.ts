@@ -32,7 +32,7 @@ export async function prepare({
     }
 
     const branchInfo = await setupBranch(octokit, context);
-    await prepareJunieInputs(context, branchInfo)
+    await prepareJunieInputs(octokit, context, branchInfo)
 }
 
 function shouldHandle(context: GitHubContext): boolean {

@@ -1,15 +1,17 @@
 import {
     GitHubContext, isCheckSuiteEvent,
     isIssueCommentEvent, isIssuesEvent, isPullRequestEvent,
-    isPullRequestReviewCommentEvent, isPullRequestReviewEvent, ParsedGitHubContext
+    isPullRequestReviewCommentEvent, isPullRequestReviewEvent
 } from "../context";
 import * as core from "@actions/core";
 import {JunieTask} from "./types/junie";
 import {CHECK_FAILURE_PROMPT_TEMPLATE} from "../constants";
-import { BranchInfo } from "../operations/branch";
+import {BranchInfo} from "../operations/branch";
+import {extractFailedChecksInfo} from "../operations/checks";
+import {Octokits} from "../api/client";
 
 export async function prepareJunieInputs(
-    context: GitHubContext, branchInfo: BranchInfo) {
+    octokit: Octokits, context: GitHubContext, branchInfo: BranchInfo) {
     const junieTask: JunieTask = {}
 
     if (context.inputs.prompt) {
@@ -45,8 +47,8 @@ export async function prepareJunieInputs(
     }
 
     if (isCheckSuiteEvent(context)) {
-        const checksInfo = ""
-        junieTask.textTask = {text: CHECK_FAILURE_PROMPT_TEMPLATE(branchInfo, checksInfo)}
+        const {combinedOutput} = await extractFailedChecksInfo(octokit.rest, context, branchInfo.workingBranch)
+        junieTask.textTask = {text: CHECK_FAILURE_PROMPT_TEMPLATE(branchInfo, combinedOutput)}
     }
 
     core.setOutput('EJ_CLI_TOKEN', context.inputs.appToken);
