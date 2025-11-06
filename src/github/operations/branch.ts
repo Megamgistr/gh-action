@@ -4,7 +4,7 @@ import * as core from "@actions/core";
 import {$} from "bun";
 import {
     AutomationContext,
-    GitHubContext, isEntityContext,
+    GitHubContext, isCheckSuiteEvent, isEntityContext,
     isIssueCommentEvent,
     isPullRequestEvent,
     isPullRequestReviewCommentEvent,
@@ -15,6 +15,7 @@ import type {Octokits} from "../api/client";
 import {WORKING_BRANCH_PREFIX} from "../constants";
 
 export type BranchInfo = {
+    currentBranch: string;
     baseBranch: string;
     workingBranch: string;
 };
@@ -33,6 +34,7 @@ async function createNewBranch(baseBranch: string, branchName: string) {
 
         return {
             baseBranch: baseBranch,
+            currentBranch: baseBranch,
             workingBranch: newBranch,
         };
     } catch (error) {
@@ -44,7 +46,7 @@ async function createNewBranch(baseBranch: string, branchName: string) {
 async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubContext, octokit: Octokits) {
     const entityNumber = context.entityNumber;
     const isPR = context.isPR;
-    if (isPR) {
+    if (isPR && entityNumber) {
         let targetBranch = ""
         let state = "";
         if (isPullRequestEvent(context)
@@ -53,13 +55,14 @@ async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubC
             targetBranch = context.payload.pull_request.head.ref;
             state = context.payload.pull_request.state;
         }
-        if (isIssueCommentEvent(context)) {
-            targetBranch = (await octokit.rest.pulls.get({
+        if (isIssueCommentEvent(context) || isCheckSuiteEvent(context)) {
+             const data = (await octokit.rest.pulls.get({
                 owner: context.payload.repository.owner.login,
                 repo: context.payload.repository.name,
                 pull_number: entityNumber,
-            })).data.head.ref;
-            state = context.payload.issue.state;
+            })).data;
+            targetBranch = data.head.ref
+            state = data.state;
         }
 
         console.log(`Target branch: ${targetBranch}`);
@@ -74,13 +77,14 @@ async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubC
             console.log(`Successfully checked out PR branch for PR #${entityNumber}`);
 
             return {
-                baseBranch: targetBranch!,
+                currentBranch: targetBranch!,
+                baseBranch: baseBranch,
                 workingBranch: targetBranch!,
             };
         }
     }
-    const entityType = isPR ? "pr" : "issue";
-    const branchName = `${WORKING_BRANCH_PREFIX}${entityType}-${entityNumber}`;
+    const entityType = isPR ? "pr" : entityNumber ? "issue" : "run";
+    const branchName = `${WORKING_BRANCH_PREFIX}${entityType}-${entityNumber || context.runId}`;
     return await createNewBranch(baseBranch, branchName)
 }
 
@@ -101,4 +105,6 @@ export async function setupBranch(octokit: Octokits, context: GitHubContext) {
     }
     core.setOutput('BASE_BRANCH', branchInfo.baseBranch);
     core.setOutput('WORKING_BRANCH', branchInfo.workingBranch);
+    core.setOutput("CURRENT_BRANCH", branchInfo.currentBranch);
+    return branchInfo;
 }

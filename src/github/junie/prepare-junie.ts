@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import {
-    GitHubContext,
+    GitHubContext, isCheckSuiteEvent,
     isEntityContext
 } from "../context";
 import {checkHumanActor} from "../validation/actor";
@@ -30,12 +30,17 @@ export async function prepare({
         await checkHumanActor(octokit.rest, context);
         await writeInitialFeedbackComment(octokit.rest, context);
     }
-    await setupBranch(octokit, context);
-    await prepareJunieInputs(context)
+
+    const branchInfo = await setupBranch(octokit, context);
+    await prepareJunieInputs(context, branchInfo)
 }
 
 function shouldHandle(context: GitHubContext): boolean {
     if (context.inputs.prompt) {
+        return true;
+    }
+    // Support only check_suite events for PRs
+    if (isCheckSuiteEvent(context) && context.isPR) {
         return true;
     }
     return isEntityContext(context) && checkContainsTrigger(context);

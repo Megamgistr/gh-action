@@ -59,23 +59,23 @@ async function getActionToDo(): Promise<ActionType> {
     // Check if there are changed files
     const hasChangedFiles = await checkForChangedFiles();
     const initCommentId = process.env.INIT_COMMENT_ID;
-    const baseBranch = process.env.BASE_BRANCH!;
+    const currentBranch = process.env.CURRENT_BRANCH!;
     const workingBranch = process.env.WORKING_BRANCH!;
 
 
     console.log(`Has changed files: ${hasChangedFiles}`);
     console.log(`Init comment ID: ${initCommentId}`);
-    console.log(`Base branch: ${baseBranch}`);
+    console.log(`Current branch: ${currentBranch}`);
     console.log(`Working branch: ${workingBranch}`);
 
     let action: ActionType
     if (!hasChangedFiles && initCommentId) {
         console.log('No changes found but has comment ID - will write comment');
         action = ActionType.WRITE_COMMENT;
-    } else if (hasChangedFiles && baseBranch !== workingBranch) {
+    } else if (hasChangedFiles && currentBranch !== workingBranch) {
         console.log('Changes found and branches differ - will create PR');
         action = ActionType.CREATE_PR;
-    } else if (hasChangedFiles && baseBranch === workingBranch) {
+    } else if (hasChangedFiles && currentBranch === workingBranch) {
         console.log('Changes found and branches are same - will commit directly');
         action = ActionType.COMMIT_CHANGES;
     } else {

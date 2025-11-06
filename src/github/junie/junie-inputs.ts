@@ -1,15 +1,15 @@
 import {
-    GitHubContext,
+    GitHubContext, isCheckSuiteEvent,
     isIssueCommentEvent, isIssuesEvent, isPullRequestEvent,
     isPullRequestReviewCommentEvent, isPullRequestReviewEvent, ParsedGitHubContext
 } from "../context";
 import * as core from "@actions/core";
 import {JunieTask} from "./types/junie";
-import {ActionType} from "../../entrypoints/handle-results";
+import {CHECK_FAILURE_PROMPT_TEMPLATE} from "../constants";
+import { BranchInfo } from "../operations/branch";
 
 export async function prepareJunieInputs(
-    context: GitHubContext,
-) {
+    context: GitHubContext, branchInfo: BranchInfo) {
     const junieTask: JunieTask = {}
 
     if (context.inputs.prompt) {
@@ -42,6 +42,11 @@ export async function prepareJunieInputs(
 
     if (isPullRequestEvent(context)) {
         junieTask.gitHubPullRequest = {url: context.payload.pull_request.html_url}
+    }
+
+    if (isCheckSuiteEvent(context)) {
+        const checksInfo = ""
+        junieTask.textTask = {text: CHECK_FAILURE_PROMPT_TEMPLATE(branchInfo, checksInfo)}
     }
 
     core.setOutput('EJ_CLI_TOKEN', context.inputs.appToken);

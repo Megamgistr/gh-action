@@ -7,7 +7,7 @@ import {
     PullRequestEvent,
     PullRequestReviewEvent,
     PullRequestReviewCommentEvent,
-    WorkflowRunEvent, WorkflowDispatchEvent, RepositoryDispatchEvent, Repository,
+    WorkflowRunEvent, WorkflowDispatchEvent, RepositoryDispatchEvent, Repository, CheckSuiteEvent,
 } from "@octokit/webhooks-types";
 import {DEFAULT_TRIGGER_PHRASE} from "./constants";
 
@@ -24,6 +24,7 @@ const ENTITY_EVENT_NAMES = [
     "pull_request",
     "pull_request_review",
     "pull_request_review_comment",
+    "check_suite",
 ] as const;
 
 const AUTOMATION_EVENT_NAMES = [
@@ -55,7 +56,7 @@ type BaseContext = {
     };
 };
 
-export type ParsedGitHubContext = BaseContext & {
+export type AutomationEntityGitHubContext = BaseContext & {
     eventName: EntityEventName;
     payload:
         | IssuesEvent
@@ -64,6 +65,19 @@ export type ParsedGitHubContext = BaseContext & {
         | PullRequestReviewEvent
         | PullRequestReviewCommentEvent;
     entityNumber: number;
+    isPR: boolean;
+};
+
+export type ParsedGitHubContext = BaseContext & {
+    eventName: EntityEventName;
+    payload:
+        | CheckSuiteEvent
+        | IssuesEvent
+        | IssueCommentEvent
+        | PullRequestEvent
+        | PullRequestReviewEvent
+        | PullRequestReviewCommentEvent;
+    entityNumber?: number;
     isPR: boolean;
 };
 
@@ -157,6 +171,18 @@ export function parseGitHubContext(): GitHubContext {
             };
             break
         }
+        case "check_suite": {
+            const payload = context.payload as CheckSuiteEvent;
+            const isPr = payload.check_suite.pull_requests.length > 0
+            parsedContext = {
+                ...commonFields,
+                eventName: context.eventName,
+                payload: payload,
+                entityNumber: isPr ? payload.check_suite.pull_requests[0].number : undefined,
+                isPR: isPr,
+            };
+            break
+        }
         case "workflow_dispatch": {
             parsedContext = {
                 ...commonFields,
@@ -196,6 +222,10 @@ export function parseGitHubContext(): GitHubContext {
     core.setOutput('ACTOR_EMAIL', parsedContext.actorEmail);
     core.setOutput("PARSED_CONTEXT", JSON.stringify(parsedContext));
     return parsedContext;
+}
+
+export function isCheckSuiteEvent(context: GitHubContext) : context is ParsedGitHubContext & { payload: CheckSuiteEvent } {
+    return context.eventName === "check_suite";
 }
 
 export function isIssuesEvent(

@@ -3,7 +3,7 @@
 import * as core from "@actions/core";
 import {createJobRunLink, createCommentBody} from "./common";
 import {
-    GitHubContext,
+    GitHubContext, isCheckSuiteEvent, isEntityContext,
     isPullRequestReviewCommentEvent,
     type ParsedGitHubContext,
 } from "../../context";
@@ -34,20 +34,24 @@ export async function writeInitialFeedbackComment(
             response = await octokit.rest.pulls.createReplyForReviewComment({
                 owner: ownerLogin,
                 repo: name,
-                pull_number: context.entityNumber,
+                pull_number: context.entityNumber!,
                 comment_id: context.payload.comment.id,
                 body: initialBody,
             });
         } else {
+            if (isCheckSuiteEvent(context) && !context.isPR) {
+                console.log('Skipping initial comment for not PR check suite event');
+                return;
+            }
             response = await octokit.rest.issues.createComment({
                 owner: ownerLogin,
                 repo: name,
-                issue_number: context.entityNumber,
+                issue_number: context.entityNumber!,
                 body: initialBody,
             });
         }
         console.log(`Created initial comment with ID: ${response.data.id}`);
-        const initCommentId =  response.data.id;
+        const initCommentId = response.data.id;
         core.setOutput('INIT_COMMENT_ID', initCommentId);
 
         return initCommentId;
