@@ -56,6 +56,7 @@ async function setupBrunchEntityEvent(baseBranch: string, context: ParsedGitHubC
             state = context.payload.pull_request.state;
         }
         if (isIssueCommentEvent(context)) {
+            console.log(`Issue comment event, using PR branch ${context.payload.issue.pull_request}`);
             state = context.payload.issue.state;
         }
 
