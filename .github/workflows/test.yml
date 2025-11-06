@@ -1,0 +1,55 @@
+name: Test that always fails
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  failing-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run failing test
+        run: |
+          echo "Running tests..."
+          echo "Test 1: PASSED"
+          echo "Test 2: PASSED"
+          echo "Test 3: FAILED - Assertion error: Expected 5 but got 3"
+          echo "Error: Test suite failed with 1 failure"
+          exit 1
+
+  gradle-style-failing-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Simulate Gradle build failure
+        run: |
+          echo "> Task :app:compileKotlin FAILED"
+          echo "e: /src/main/kotlin/Main.kt: (10, 5): Unresolved reference: undefined"
+          echo "e: /src/main/kotlin/Main.kt: (15, 10): Type mismatch: inferred type is String but Int was expected"
+          echo "FAILURE: Build failed with an exception."
+          echo ""
+          echo "* What went wrong:"
+          echo "Execution failed for task ':app:compileKotlin'."
+          echo "> Compilation error. See log for more details"
+          exit 1
+
+  maven-style-failing-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Simulate Maven build failure
+        run: |
+          echo "[INFO] Building project..."
+          echo "[ERROR] Failed to compile"
+          echo "[ERROR] /src/main/java/App.java:[10,5] cannot find symbol"
+          echo "[ERROR]   symbol:   class UndefinedClass"
+          echo "[ERROR]   location: class App"
+          echo "[ERROR] /src/main/java/App.java:[15,10] incompatible types: String cannot be converted to int"
+          echo "[INFO] BUILD FAILURE"
+          exit 1
