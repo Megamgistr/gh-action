@@ -31,7 +31,7 @@ export async function prepareMcpConfig(
 
 
     if (hasGHCheksServer) {
-        baseMcpConfig.mcpServers.github_comment = {
+        baseMcpConfig.mcpServers.github_checks = {
             command: "bun",
             args: [
                 "run",

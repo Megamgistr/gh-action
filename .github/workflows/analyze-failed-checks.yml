@@ -33,7 +33,7 @@ jobs:
         with:
           junie_api_key: ${{ secrets.JUNIE_API_KEY }}
           prompt: |
-            You are working on branch ${{ github.event.workflow_run.pull_requests[0].head.ref }}.
-            The user makes changes against the branch ${{ github.event.workflow_run.pull_requests[0].base.ref }} and this make a CI checks fails:
+            The user makes changes and this make a CI checks fails
             
-            Use mcp_github_checks_server to get derailed information about the failed checks.
+            Use mcp_github_checks_server to get derailed information about the failed checks
+            and fix the problem.

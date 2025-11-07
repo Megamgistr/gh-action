@@ -3,9 +3,8 @@
 import * as core from "@actions/core";
 import {createJobRunLink, createCommentBody} from "./common";
 import {
-    GitHubContext, isCheckSuiteEvent, isEntityContext,
+    GitHubContext,
     isPullRequestReviewCommentEvent,
-    type ParsedGitHubContext,
 } from "../../context";
 import type {Octokit} from "@octokit/rest";
 import {createOctokit} from "../../api/client";
@@ -135,7 +134,7 @@ function getSuccessBody(repoFullName: string, successData: SuccessFeedbackData):
     switch (successData.actionToDo) {
         case "COMMIT_CHANGES":
             console.log(`Commit pushed to current branch: ${successData.commitSHA}`);
-            result = COMMIT_PUSHED_FEEDBACK_COMMENT_TEMPLATE(successData.commitSHA!);
+            result = COMMIT_PUSHED_FEEDBACK_COMMENT_TEMPLATE(successData.commitSHA!, successData.junieTitle!, successData.junieSummary!);
             break;
         case "CREATE_PR":
             if (successData.prLink) {
