@@ -11,7 +11,7 @@ jobs:
       - name: Dump workflow_run event
         run: |
           echo "Conclusion: ${{ github.event.workflow_run.conclusion }}"
-          echo "PR array length: ${{ github.event.workflow_run.event }}"
+          echo "Event name: ${{ github.event.workflow_run.event }}"
           echo "Full event payload:"
           echo "${{ toJSON(github.event.workflow_run) }}"
   junie:
