@@ -19,7 +19,7 @@ import {GITHUB_SERVER_URL} from "../../api/config";
 
 export async function writeInitialFeedbackComment(
     octokit: Octokit,
-    context: ParsedGitHubContext,
+    context: GitHubContext,
 ) {
     const {owner, name} = context.payload.repository;
     const ownerLogin = owner.login;
@@ -38,17 +38,16 @@ export async function writeInitialFeedbackComment(
                 comment_id: context.payload.comment.id,
                 body: initialBody,
             });
-        } else {
-            if (isCheckSuiteEvent(context) && !context.isPR) {
-                console.log('Skipping initial comment for not PR check suite event');
-                return;
-            }
+        } else if(context.entityNumber) {
             response = await octokit.rest.issues.createComment({
                 owner: ownerLogin,
                 repo: name,
-                issue_number: context.entityNumber!,
+                issue_number: context.entityNumber,
                 body: initialBody,
             });
+        } else {
+            console.log(`Skip creating initial comment for ${context.eventName} event`);
+            return;
         }
         console.log(`Created initial comment with ID: ${response.data.id}`);
         const initCommentId = response.data.id;

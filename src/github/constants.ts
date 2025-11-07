@@ -40,10 +40,3 @@ export const MANUALLY_PR_CREATE_FEEDBACK_COMMENT_TEMPLATE = (createPRLink: strin
 export const COMMIT_PUSHED_FEEDBACK_COMMENT_TEMPLATE = (commitSHA: string) => `${SUCCESS_FEEDBACK_COMMENT}\n Commit sha: ${commitSHA}`
 
 export const SUCCESS_FEEDBACK_COMMENT_WITH_RESULT = (junieTitle: string, junieBody: string) => `${SUCCESS_FEEDBACK_COMMENT}\n\nResult: ${junieTitle} \n ${junieBody}`
-
-export const CHECK_FAILURE_PROMPT_TEMPLATE = (branchInfo: BranchInfo, checksInfo: String) => `
-            You are working on branch ${branchInfo.currentBranch}.
-            The user makes changes against the branch ${branchInfo.baseBranch} and this make a CI checks fails:
-            
-            ${checksInfo}
-`

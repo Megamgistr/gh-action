@@ -84,6 +84,7 @@ runs:
         ALL_INPUTS: ${{ toJson(inputs) }}
         BOT_ID: ${{ inputs.bot_id }}
         BOT_NAME: ${{ inputs.bot_name }}
+        JUNIE_WORKING_DIR: ${{ inputs.junie_work_dir }}
 
     - name: Install Junie
       if: steps.prepare.outputs.SHOULD_SKIP != 'true'

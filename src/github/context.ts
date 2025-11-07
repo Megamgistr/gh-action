@@ -24,7 +24,6 @@ const ENTITY_EVENT_NAMES = [
     "pull_request",
     "pull_request_review",
     "pull_request_review_comment",
-    "check_suite",
 ] as const;
 
 const AUTOMATION_EVENT_NAMES = [
@@ -32,6 +31,7 @@ const AUTOMATION_EVENT_NAMES = [
     "repository_dispatch",
     "schedule",
     "workflow_run",
+    "check_suite",
 ] as const;
 
 type EntityEventName = (typeof ENTITY_EVENT_NAMES)[number];
@@ -42,7 +42,10 @@ type BaseContext = {
     eventAction?: string;
     actor: string;
     actorEmail: string;
+    entityNumber?: number;
+    isPR?: boolean;
     inputs: {
+        junieWorkingDir: string;
         appToken: string;
         baseBranch?: string;
         targetBranch?: string;
@@ -53,6 +56,7 @@ type BaseContext = {
         workingBranch?: string;
         botId?: string;
         botName?: string;
+        allowedMcpServers?: string;
     };
 };
 
@@ -64,26 +68,23 @@ export type AutomationEntityGitHubContext = BaseContext & {
         | PullRequestEvent
         | PullRequestReviewEvent
         | PullRequestReviewCommentEvent;
-    entityNumber: number;
     isPR: boolean;
 };
 
 export type ParsedGitHubContext = BaseContext & {
     eventName: EntityEventName;
     payload:
-        | CheckSuiteEvent
         | IssuesEvent
         | IssueCommentEvent
         | PullRequestEvent
         | PullRequestReviewEvent
         | PullRequestReviewCommentEvent;
-    entityNumber?: number;
-    isPR: boolean;
 };
 
 export type AutomationContext = BaseContext & {
     eventName: AutomationEventName;
     payload:
+        | CheckSuiteEvent
         | WorkflowDispatchEvent
         | RepositoryDispatchEvent
         | ScheduleEvent
@@ -100,6 +101,7 @@ export function parseGitHubContext(): GitHubContext {
         actor: context.actor,
         actorEmail: getActorEmail(),
         inputs: {
+            junieWorkingDir: process.env.JUNIE_WORKING_DIR!,
             headRef: process.env.GITHUB_HEAD_REF,
             appToken: process.env.APP_TOKEN!,
             prompt: process.env.PROMPT || "",
@@ -110,6 +112,7 @@ export function parseGitHubContext(): GitHubContext {
             targetBranch: process.env.TARGET_BRANCH,
             botId: process.env.BOT_ID,
             botName: process.env.BOT_NAME,
+            allowedMcpServers: process.env.ALLOWED_MCP_SERVERS,
         },
     };
 
@@ -208,10 +211,14 @@ export function parseGitHubContext(): GitHubContext {
             break
         }
         case "workflow_run": {
+            const payload = context.payload as WorkflowRunEvent;
+            const isPR = payload.workflow_run.pull_requests.length > 0
             parsedContext =  {
                 ...commonFields,
                 eventName: context.eventName,
                 payload: context.payload as unknown as WorkflowRunEvent,
+                isPR,
+                entityNumber: isPR ? payload.workflow_run.pull_requests[0].number : undefined,
             };
             break;
         }
@@ -224,7 +231,7 @@ export function parseGitHubContext(): GitHubContext {
     return parsedContext;
 }
 
-export function isCheckSuiteEvent(context: GitHubContext) : context is ParsedGitHubContext & { payload: CheckSuiteEvent } {
+export function isCheckSuiteEvent(context: GitHubContext) : context is AutomationContext & { payload: CheckSuiteEvent } {
     return context.eventName === "check_suite";
 }
 

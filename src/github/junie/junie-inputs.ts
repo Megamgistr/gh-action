@@ -1,17 +1,13 @@
 import {
-    GitHubContext, isCheckSuiteEvent,
+    GitHubContext,
     isIssueCommentEvent, isIssuesEvent, isPullRequestEvent,
     isPullRequestReviewCommentEvent, isPullRequestReviewEvent
 } from "../context";
 import * as core from "@actions/core";
 import {JunieTask} from "./types/junie";
-import {CHECK_FAILURE_PROMPT_TEMPLATE} from "../constants";
-import {BranchInfo} from "../operations/branch";
-import {extractFailedChecksInfo} from "../operations/checks";
-import {Octokits} from "../api/client";
 
 export async function prepareJunieInputs(
-    octokit: Octokits, context: GitHubContext, branchInfo: BranchInfo) {
+    context: GitHubContext, mcpConfig: string) {
     const junieTask: JunieTask = {}
 
     if (context.inputs.prompt) {
@@ -46,13 +42,9 @@ export async function prepareJunieInputs(
         junieTask.gitHubPullRequest = {url: context.payload.pull_request.html_url}
     }
 
-    if (isCheckSuiteEvent(context)) {
-        const {combinedOutput} = await extractFailedChecksInfo(octokit.rest, context, branchInfo.workingBranch)
-        junieTask.textTask = {text: CHECK_FAILURE_PROMPT_TEMPLATE(branchInfo, combinedOutput)}
-    }
-
     core.setOutput('EJ_CLI_TOKEN', context.inputs.appToken);
     core.setOutput('EJ_TASK', JSON.stringify(junieTask));
+    core.setOutput('EJ_MCP_CONFIG', mcpConfig);
     // core.setOutput('EJ_TASK_TEXT', junieTaskText);
 }
 
