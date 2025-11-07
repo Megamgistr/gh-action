@@ -1,6 +1,5 @@
 import type { Octokit } from "@octokit/rest";
 import * as core from "@actions/core";
-import {GitHubContext} from "../context";
 
 export interface FailedCheckInfo {
     checkName: string;
@@ -14,19 +13,18 @@ export interface ExtractFailedChecksResult {
 
 export async function extractFailedChecksInfo(
     octokit: Octokit,
-    context: GitHubContext,
+    owner: string,
+    repo: string,
     ref: string,
     maxLength: number = 19000
 ): Promise<ExtractFailedChecksResult> {
-    const { owner, name } = context.payload.repository;
-    const ownerLogin = owner.login;
-    console.log(`Extracting failed checks for ${ownerLogin}/${name} ref: ${ref}`);
+    console.log(`Extracting failed checks for ${owner}/${repo} ref: ${ref}`);
 
     try {
         // Get check runs for the ref
         const { data: checkRuns } = await octokit.rest.checks.listForRef({
-            owner: ownerLogin,
-            repo: name,
+            owner,
+            repo,
             ref,
             per_page: 100,
         });
@@ -44,8 +42,8 @@ export async function extractFailedChecksInfo(
         for (const checkRun of failedCheckRuns) {
             const checkInfo = await extractCheckRunLog(
                 octokit,
-                ownerLogin,
-                name,
+                owner,
+                repo,
                 checkRun
             );
 

@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import {
-    GitHubContext, isCheckSuiteEvent,
+    GitHubContext,
     isEntityContext
 } from "../context";
 import {checkHumanActor} from "../validation/actor";
@@ -10,6 +10,7 @@ import {PrepareJunieOptions} from "./types/junie";
 import {prepareJunieInputs} from "./junie-inputs";
 import {checkContainsTrigger} from "../validation/trigger";
 import {gitAuth} from "../operations/auth";
+import {prepareMcpConfig} from "../../mcp/prepare-mcp-config";
 
 
 export async function prepare({
@@ -28,19 +29,26 @@ export async function prepare({
 
     if (isEntityContext(context)) {
         await checkHumanActor(octokit.rest, context);
-        await writeInitialFeedbackComment(octokit.rest, context);
     }
 
+    await writeInitialFeedbackComment(octokit.rest, context);
+
     const branchInfo = await setupBranch(octokit, context);
-    await prepareJunieInputs(octokit, context, branchInfo)
+
+    const mcpConfig = await prepareMcpConfig({
+        junieWorkingDir: context.inputs.junieWorkingDir,
+        allowedMcpServers: context.inputs.allowedMcpServers ? context.inputs.allowedMcpServers.split(',') : [],
+        githubToken: githubToken,
+        owner: context.payload.repository.owner.login,
+        repo: context.payload.repository.name,
+        currentBranch: branchInfo.currentBranch,
+    })
+
+    await prepareJunieInputs(context, mcpConfig)
 }
 
 function shouldHandle(context: GitHubContext): boolean {
     if (context.inputs.prompt) {
-        return true;
-    }
-    // Support only check_suite events for PRs
-    if (isCheckSuiteEvent(context) && context.isPR) {
         return true;
     }
     return isEntityContext(context) && checkContainsTrigger(context);

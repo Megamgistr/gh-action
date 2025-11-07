@@ -1,11 +1,12 @@
 name: analyze-failed-checks.yml
 on:
-  check_suite:
+  workflow_run:
+    workflows: ["Test that always fails"]
     types: [completed]
 
 jobs:
   junie:
-    if: github.event.check_suite.conclusion == 'failure' && github.event.check_suite.pull_requests.length > 0
+    if: ${{ github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.pull_requests.length > 0}}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -22,3 +23,8 @@ jobs:
         uses: ./.
         with:
           junie_api_key: ${{ secrets.JUNIE_API_KEY }}
+          prompt: |
+            You are working on branch ${{ github.event.workflow_run.pull_requests[0].head.ref }}.
+            The user makes changes against the branch ${{ github.event.workflow_run.pull_requests[0].base.ref }} and this make a CI checks fails:
+            
+            Use mcp_github_checks_server to get derailed information about the failed checks.
