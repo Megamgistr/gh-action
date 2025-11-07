@@ -1,5 +1,4 @@
 import {GITHUB_API_URL} from "../github/api/config";
-import {MCP_GITHUB_CHECKS_SERVER_NAME} from "./github-checks-server";
 
 type PrepareConfigParams = {
     junieWorkingDir: string;
@@ -23,7 +22,7 @@ export async function prepareMcpConfig(
     } = params;
 
     const hasGHCheksServer = allowedMcpServers.some((name) =>
-        name == MCP_GITHUB_CHECKS_SERVER_NAME
+        name == "mcp_github_checks_server"
     );
 
     const baseMcpConfig: { mcpServers: Record<string, unknown> } = {

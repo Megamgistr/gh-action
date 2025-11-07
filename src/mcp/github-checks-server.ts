@@ -11,8 +11,6 @@ const HEAD_SHA = process.env.HEAD_SHA;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_API_URL = process.env.GITHUB_API_URL;
 
-export const MCP_GITHUB_CHECKS_SERVER_NAME = "mcp_github_checks_server";
-
 function log(message: string) {
     console.log(`[GitHub Checks Server] ${message}`);
 }
