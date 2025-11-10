@@ -1,4 +1,7 @@
 import {GITHUB_API_URL} from "../github/api/config";
+import {writeFile, mkdir} from 'fs/promises';
+import {join} from 'path';
+import {homedir} from 'os';
 
 type PrepareConfigParams = {
     junieWorkingDir: string;
@@ -47,5 +50,16 @@ export async function prepareMcpConfig(
         };
     }
 
-    return JSON.stringify(baseMcpConfig, null, 2);
+    const configJsonString = JSON.stringify(baseMcpConfig, null, 2);
+
+    // Create ~/.junie directory if it doesn't exist
+    const junieDir = join(homedir(), '.junie');
+    await mkdir(junieDir, {recursive: true});
+
+    // Write mcp.json config file to ~/.junie/mcp.json
+    const mcpConfigPath = join(junieDir, 'mcp.json');
+    await writeFile(mcpConfigPath, configJsonString, 'utf-8');
+    console.log(`MCP config written to: ${mcpConfigPath}`);
+
+    return configJsonString;
 }
