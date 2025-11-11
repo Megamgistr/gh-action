@@ -97,19 +97,16 @@ async function extractCheckRunLog(
 
         // Try to download workflow job logs
         try {
-            const logsResponse = await octokit.rest.actions.downloadJobLogsForWorkflowRun({
-                owner,
-                repo,
-                job_id: jobId,
-            });
-
-            // Parse logs (logs are returned as a redirect URL, we need to fetch the actual content)
+            const logsResponse = await octokit.rest.actions.downloadJobLogsForWorkflowRun({ owner, repo, job_id: jobId });
             let logText: string;
-            if (typeof logsResponse.data === 'string') {
-                logText = logsResponse.data;
+            const data: unknown = (logsResponse as any).data;
+            if (typeof data === 'string' && /^https?:\/\//.test(data)) {
+                const res = await fetch(data);
+                logText = await res.text();
+            } else if (typeof data === 'string') {
+                logText = data;
             } else {
-                // If data is a URL or buffer, handle appropriately
-                logText = String(logsResponse.data);
+                logText = String(data);
             }
 
             const logLines = logText.split('\n');
