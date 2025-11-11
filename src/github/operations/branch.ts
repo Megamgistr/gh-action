@@ -41,8 +41,7 @@ async function createNewBranch(baseBranch: string, branchName: string) {
 }
 
 async function setupWorkingBranch(baseBranch: string, context: GitHubContext, octokit: Octokits) {
-    console.log(`Current dir ${process.cwd()}`);
-    console.log(`Working dir ${process.env.GITHUB_WORKSPACE}`);
+    console.log(`Git diff ${$`git diff`}`)
     const entityNumber = context.entityNumber;
     const isPR = context.isPR;
     if (isPR && entityNumber) {
