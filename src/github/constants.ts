@@ -21,8 +21,8 @@ ${junieBody}
 export const PR_TITLE_TEMPLATE = (junieTitle: string) =>
     `[Junie]: ${junieTitle}`
 
-export const COMMIT_MESSAGE_TEMPLATE = (junieTitle: string, issueId?: number) =>
-    `${issueId ? `[issue-${issueId}]\n\n` : ""}${junieTitle}`;
+export const COMMIT_MESSAGE_TEMPLATE = (junieTitle: string, junieBody?: string, issueId?: number) =>
+    `${issueId ? `[issue-${issueId}]\n\n` : ""}${junieTitle}${junieBody ? `\n\n${junieBody}` : ""}`;
 
 export const SUCCESS_FEEDBACK_COMMENT = "Junie is successful finished!"
 
