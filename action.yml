@@ -33,6 +33,16 @@ inputs:
     description: "Directory to use for Junie working files"
     required: false
     default: "/tmp/junie-work"
+  allowed_mcp_servers:
+    description: "Comma-separated list of MCP servers to enable (e.g., mcp_github_checks_server)"
+    required: false
+    default: ""
+
+  # Runtime configuration
+  path_to_bun_executable:
+    description: "Absolute path to a preinstalled Bun executable. If provided, the action will skip installing Bun."
+    required: false
+    default: ""
 
   # Auth configuration
   junie_api_key:
