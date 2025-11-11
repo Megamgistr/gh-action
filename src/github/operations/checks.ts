@@ -103,13 +103,22 @@ async function extractCheckRunLog(
                 job_id: jobId,
             });
 
-            // Parse logs (logs are returned as a redirect URL, we need to fetch the actual content)
+            // Octokit returns a redirect URL, follow it to fetch the actual log content
             let logText: string;
-            if (typeof logsResponse.data === 'string') {
-                logText = logsResponse.data;
+            const data: unknown = (logsResponse as any).data;
+            if (typeof data === 'string' && /^https?:\/\//.test(data)) {
+                try {
+                    const res = await (globalThis as any).fetch(data);
+                    logText = await res.text();
+                } catch (fetchErr) {
+                    core.debug(`Failed to fetch redirected logs URL, falling back to raw data: ${fetchErr}`);
+                    logText = data;
+                }
+            } else if (typeof data === 'string') {
+                logText = data;
             } else {
-                // If data is a URL or buffer, handle appropriately
-                logText = String(logsResponse.data);
+                // Fallback: coerce to string
+                logText = String(data);
             }
 
             const logLines = logText.split('\n');
