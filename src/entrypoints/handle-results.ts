@@ -27,7 +27,7 @@ export async function handleResults() {
         if (isEntityContext(context)) {
             issueId = context.entityNumber
         }
-        const commitMessage = COMMIT_MESSAGE_TEMPLATE(title, body, issueId)
+        const commitMessage = COMMIT_MESSAGE_TEMPLATE(title, issueId)
 
         // Export outputs based on action type
         switch (actionToDo) {
