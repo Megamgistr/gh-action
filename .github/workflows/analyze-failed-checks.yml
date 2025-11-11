@@ -27,4 +27,4 @@ jobs:
           prompt: |
             The user makes changes and this make a CI checks fails
             
-            use the MCP tool `get_pr_failed_checks_info` to get derailed information about the failed checks.
+            You can use MCP for Get detailed information about failed checks for a Pull Request, including extracted error logs
