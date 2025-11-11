@@ -25,6 +25,7 @@ jobs:
           junie_api_key: ${{ secrets.JUNIE_API_KEY }}
           allowed_mcp_servers: mcp_github_checks_server
           prompt: |
-            The user makes changes and this make a CI checks fails
+            The user makes changes and this makes a CI checks in Pull Request fails.
+            You need to investigate the checks failures and suggest a fix.
             
-            You can use MCP for Get detailed information about failed checks for a Pull Request, including extracted error logs
+            Use MCP server to get detailed information about failed checks for a Pull Request, including extracted error logs
