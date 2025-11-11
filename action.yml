@@ -33,6 +33,9 @@ inputs:
     description: "Directory to use for Junie working files"
     required: false
     default: "/tmp/junie-work"
+  allowed_mcp_servers:
+    description: "Comma-separated list of github MCP servers to use. Allowed server names: mcp_github_checks_server"
+    required: false
 
   # Auth configuration
   junie_api_key:
@@ -81,10 +84,12 @@ runs:
         TARGET_BRANCH: ${{ github.head_ref }}
         OVERRIDE_GITHUB_TOKEN: ${{ inputs.custom_github_token }}
         DEFAULT_WORKFLOW_TOKEN: ${{ github.token }}
-        ALL_INPUTS: ${{ toJson(inputs) }}
         BOT_ID: ${{ inputs.bot_id }}
         BOT_NAME: ${{ inputs.bot_name }}
         JUNIE_WORKING_DIR: ${{ inputs.junie_work_dir }}
+        ALLOWED_MCP_SERVERS: ${{ inputs.allowed_mcp_servers }}
+        ALL_INPUTS: ${{ toJson(inputs) }}
+
 
     - name: Install Junie
       if: steps.prepare.outputs.SHOULD_SKIP != 'true'
