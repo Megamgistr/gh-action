@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 1
 
       - name: Run Junie
-        id: claude
+        id: junie
         uses: ./.
         with:
           junie_api_key: ${{ secrets.JUNIE_API_KEY }}
