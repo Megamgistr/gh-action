@@ -28,4 +28,4 @@ jobs:
             The user makes changes and this makes a CI checks in Pull Request fails.
             You need to investigate the checks failures and suggest a fix.
             
-            Use MCP server to get detailed information about failed checks for a Pull Request, including extracted error logs
+            You have connected MCP with get_pr_failed_checks_info controller. Call it to get the failed checks logs info.
