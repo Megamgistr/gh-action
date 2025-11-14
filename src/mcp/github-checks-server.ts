@@ -202,7 +202,6 @@ async function extractCheckRunLog(
 }
 
 function extractJobIdFromUrl(detailsUrl: string, repoFullName: string): number | null {
-    https://github.com/Megamgistr/gh-action/actions/runs/19360674725/job/55391605623
     // Check if URL is related to the correct repository
     if (!detailsUrl.includes(repoFullName)) {
         return null;
