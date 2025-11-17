@@ -104,6 +104,8 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
                 state: "open"
             });
 
+            console.log(`Found ${JSON.stringify(prs.data)} open pull requests for branch ${branch}`)
+
             if (prs.data.length > 0) {
                 const prNumber = prs.data[0].number;
                 const pr = await octokit.rest.pulls.get({
