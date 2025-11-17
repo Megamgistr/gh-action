@@ -112,8 +112,7 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
                     pull_number: prNumber
                 });
                 state = pr.data.mergeable_state;
-            }
-            {
+            } else {
                 state = 'no prs'
             }
         } else {
