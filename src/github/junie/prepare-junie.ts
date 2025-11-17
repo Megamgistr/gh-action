@@ -78,6 +78,7 @@ async function shouldHandle(context: GitHubContext, octokit: Octokits): Promise<
 
 
 async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<boolean> {
+    console.log('Checking for conflicts...')
     const maxAttempts = 10
     const delay = 6000
     let attempt = 0
@@ -95,6 +96,7 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
         } else {
             throw new Error('Resolve conflicts only works for pull requests')
         }
+        console.log(`Attempt ${attempt}: Mergeable state is ${state}`)
 
         if (state == 'unknown') {
             attempt++
