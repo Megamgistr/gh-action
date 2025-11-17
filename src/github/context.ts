@@ -7,7 +7,7 @@ import {
     PullRequestEvent,
     PullRequestReviewEvent,
     PullRequestReviewCommentEvent,
-    WorkflowRunEvent, WorkflowDispatchEvent, RepositoryDispatchEvent, Repository, CheckSuiteEvent,
+    WorkflowRunEvent, WorkflowDispatchEvent, RepositoryDispatchEvent, Repository, CheckSuiteEvent, PushEvent,
 } from "@octokit/webhooks-types";
 import {DEFAULT_TRIGGER_PHRASE} from "./constants";
 
@@ -19,6 +19,7 @@ export type ScheduleEvent = {
 };
 
 const ENTITY_EVENT_NAMES = [
+    "push",
     "issues",
     "issue_comment",
     "pull_request",
@@ -75,6 +76,7 @@ export type AutomationEntityGitHubContext = BaseContext & {
 export type ParsedGitHubContext = BaseContext & {
     eventName: EntityEventName;
     payload:
+        | PushEvent
         | IssuesEvent
         | IssueCommentEvent
         | PullRequestEvent
@@ -188,6 +190,15 @@ export function parseGitHubContext(): GitHubContext {
             };
             break
         }
+        case "push": {
+            const payload = context.payload as PushEvent;
+            parsedContext = {
+                ...commonFields,
+                eventName: context.eventName,
+                payload: payload
+            };
+            break
+        }
         case "workflow_dispatch": {
             parsedContext = {
                 ...commonFields,
@@ -235,6 +246,12 @@ export function parseGitHubContext(): GitHubContext {
 
 export function isCheckSuiteEvent(context: GitHubContext) : context is AutomationContext & { payload: CheckSuiteEvent } {
     return context.eventName === "check_suite";
+}
+
+export function isPushEvent(
+    context: GitHubContext,
+): context is ParsedGitHubContext & { payload: PushEvent } {
+    return context.eventName === "push";
 }
 
 export function isIssuesEvent(

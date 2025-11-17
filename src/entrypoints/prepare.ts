@@ -2,9 +2,8 @@
 
 import * as core from "@actions/core";
 import {setupGitHubToken} from "../github/token";
-import {checkWritePermissions} from "../github/validation/permissions";
 import {createOctokit} from "../github/api/client";
-import {parseGitHubContext, isEntityContext } from "../github/context";
+import {parseGitHubContext } from "../github/context";
 import {prepare} from "../github/junie/prepare-junie";
 
 async function run() {

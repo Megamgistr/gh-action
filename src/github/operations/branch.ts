@@ -6,7 +6,7 @@ import {
     GitHubContext,
     isPullRequestEvent,
     isPullRequestReviewCommentEvent,
-    isPullRequestReviewEvent,
+    isPullRequestReviewEvent, isPushEvent,
 } from "../context";
 import type {Octokits} from "../api/client";
 import {WORKING_BRANCH_PREFIX} from "../constants";
@@ -72,7 +72,7 @@ async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
         } else {
             const fetchDepth = 20
             await $`git fetch origin --depth=${fetchDepth} ${targetBranch}`;
-            await $`git checkout ${targetBranch} --`;
+            await $`git checkout ${targetBranch}`;
 
             console.log(`Successfully checked out PR branch for PR #${entityNumber}`);
 
@@ -82,6 +82,14 @@ async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
                 workingBranch: targetBranch!,
             };
         }
+    }
+
+    if (isPushEvent(context)) {
+        baseBranch = context.payload.ref
+        const fetchDepth = 20
+        await $`git fetch origin --depth=${fetchDepth} ${baseBranch}`;
+        await $`git checkout ${baseBranch}`;
+        console.log(`Base branch: ${baseBranch}`);
     }
 
     const entityType = isPR ? "pr" : entityNumber ? "issue" : "run";
