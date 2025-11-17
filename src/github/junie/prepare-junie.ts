@@ -100,7 +100,7 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
             const prs = await octokit.rest.pulls.list({
                 owner: owner.login,
                 repo: name,
-                head: `${owner}:${branch}`,
+                head: `${owner.login}:${branch}`,
                 state: "open"
             });
 
