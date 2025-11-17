@@ -2,6 +2,7 @@ import {GITHUB_API_URL} from "../github/api/config";
 import {writeFile, mkdir, readFile} from 'fs/promises';
 import {join} from 'path';
 import {homedir} from 'os';
+import * as core from "@actions/core";
 
 type PrepareConfigParams = {
     junieWorkingDir: string;
@@ -61,6 +62,6 @@ export async function prepareMcpConfig(
     await writeFile(mcpConfigPath, configJsonString, 'utf-8');
     console.log(`File content ${await readFile(mcpConfigPath)}`)
     console.log(`MCP config written to: ${mcpConfigPath}`);
-
+    core.setOutput('EJ_MCP_CONFIG', configJsonString);
     return configJsonString;
 }

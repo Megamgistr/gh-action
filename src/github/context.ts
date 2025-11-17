@@ -45,6 +45,7 @@ type BaseContext = {
     entityNumber?: number;
     isPR?: boolean;
     inputs: {
+        resolveConflicts: string;
         junieWorkingDir: string;
         appToken: string;
         baseBranch?: string;
@@ -101,6 +102,7 @@ export function parseGitHubContext(): GitHubContext {
         actor: context.actor,
         actorEmail: getActorEmail(),
         inputs: {
+            resolveConflicts: process.env.RESOLVE_CONFLICTS || "false",
             junieWorkingDir: process.env.JUNIE_WORKING_DIR!,
             headRef: process.env.GITHUB_HEAD_REF,
             appToken: process.env.APP_TOKEN!,

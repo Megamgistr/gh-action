@@ -1,4 +1,3 @@
-import {exportResultsOutputs} from "../github/junie/junie-inputs";
 import {PR_TITLE_TEMPLATE, PR_BODY_TEMPLATE, COMMIT_MESSAGE_TEMPLATE} from "../github/constants";
 import {GitHubContext, isEntityContext} from "../github/context";
 import {execSync} from 'child_process';
@@ -15,7 +14,6 @@ export async function handleResults() {
     try {
         const junieJsonOutput = JSON.parse(process.env.JSON_JUNIE_OUTPUT!) as any
         const context = JSON.parse(process.env.PARSED_CONTEXT!) as GitHubContext
-        console.log("Junie json output:", junieJsonOutput);
         const junieErrors = junieJsonOutput.errors
         if (junieErrors && (junieErrors as string[]).length > 0) {
             throw new Error(`Junie run failed with errors: ${junieErrors.join('\n')}`)
@@ -99,6 +97,24 @@ async function checkForChangedFiles(): Promise<boolean> {
         console.error('Error checking for changed files:', error);
         // If we can't check, assume there are no changes to be safe
         return false;
+    }
+}
+
+function exportResultsOutputs(junieTitle: string,
+                                     junieSummary: string,
+                                     commitMessage?: string,
+                                     prTitle?: string,
+                                     prBody?: string): void {
+    core.setOutput('JUNIE_TITLE', junieTitle);
+    core.setOutput('JUNIE_SUMMARY', junieSummary);
+
+    if (commitMessage) {
+        core.setOutput('COMMIT_MESSAGE', commitMessage);
+    }
+
+    if (prTitle && prBody) {
+        core.setOutput('PR_TITLE', prTitle);
+        core.setOutput('PR_BODY', prBody);
     }
 }
 

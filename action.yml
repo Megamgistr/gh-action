@@ -19,6 +19,10 @@ inputs:
   base_branch:
     description: "The branch to use as the source when creating junie working branch"
     required: false
+  resolve_conflicts:
+    description: "Whether to resolve conflicts automatically"
+    required: false
+    default: "false"
 
   # Junie configuration
   prompt:
@@ -88,6 +92,7 @@ runs:
         BOT_NAME: ${{ inputs.bot_name }}
         JUNIE_WORKING_DIR: ${{ inputs.junie_work_dir }}
         ALLOWED_MCP_SERVERS: ${{ inputs.allowed_mcp_servers }}
+        RESOLVE_CONFLICTS: ${{ inputs.resolve_conflicts }}
         ALL_INPUTS: ${{ toJson(inputs) }}
 
 

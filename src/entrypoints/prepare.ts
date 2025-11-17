@@ -14,18 +14,6 @@ async function run() {
         const context = parseGitHubContext();
         console.log("Parsed context:", context);
 
-        if (isEntityContext(context)) {
-            const hasWritePermissions = await checkWritePermissions(
-                octokit.rest,
-                context,
-            );
-            if (!hasWritePermissions) {
-                throw new Error(
-                    "Actor does not have write permissions to the repository",
-                );
-            }
-        }
-
         await prepare({
             context,
             octokit,

@@ -40,13 +40,8 @@ async function createNewBranch(baseBranch: string, branchName: string) {
     }
 }
 
-async function setupWorkingBranch(baseBranch: string, context: GitHubContext, octokit: Octokits) {
-    console.log(`Current dir ${process.cwd()}`)
-    console.log(`Working dir ${process.env.GITHUB_WORKSPACE}`)
-    console.log(`Action dir ${process.env.GITHUB_ACTION_PATH}`)
-    console.log(`Git status ${await $`git status`}`)
-    console.log(`Git branch ${await $`git branch --show-current`}`)
-    console.log(`Git diff ${await $`git diff`}`)
+async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
+    let baseBranch = context.inputs.baseBranch || context.payload.repository.default_branch
     const entityNumber = context.entityNumber;
     const isPR = context.isPR;
     if (isPR && entityNumber) {
@@ -55,6 +50,7 @@ async function setupWorkingBranch(baseBranch: string, context: GitHubContext, oc
         if (isPullRequestEvent(context)
             || isPullRequestReviewEvent(context)
             || isPullRequestReviewCommentEvent(context)) {
+            baseBranch = context.payload.pull_request.base.ref;
             targetBranch = context.payload.pull_request.head.ref;
             state = context.payload.pull_request.state;
         } else {
@@ -63,10 +59,12 @@ async function setupWorkingBranch(baseBranch: string, context: GitHubContext, oc
                 repo: context.payload.repository.name,
                 pull_number: entityNumber,
             })).data;
+            baseBranch = data.base.ref;
             targetBranch = data.head.ref
             state = data.state;
         }
 
+        console.log(`Base branch: ${baseBranch}`);
         console.log(`Target branch: ${targetBranch}`);
 
         if (state === "CLOSED" || state === "MERGED") {
@@ -92,10 +90,7 @@ async function setupWorkingBranch(baseBranch: string, context: GitHubContext, oc
 }
 
 export async function setupBranch(octokit: Octokits, context: GitHubContext) {
-    const baseBranch = context.inputs.baseBranch || context.payload.repository.default_branch
-    console.log(`Base branch: ${baseBranch}. From input ${context.inputs.baseBranch}`);
-
-    let branchInfo = await setupWorkingBranch(baseBranch, context, octokit)
+    let branchInfo = await setupWorkingBranch(context, octokit)
     core.setOutput('BASE_BRANCH', branchInfo.baseBranch);
     core.setOutput('WORKING_BRANCH', branchInfo.workingBranch);
     core.setOutput("CURRENT_BRANCH", branchInfo.currentBranch);

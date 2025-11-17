@@ -1,13 +1,16 @@
+import {Octokits} from "../api/client";
 import {
     GitHubContext,
-    isIssueCommentEvent, isIssuesEvent, isPullRequestEvent,
-    isPullRequestReviewCommentEvent, isPullRequestReviewEvent
+    isIssueCommentEvent,
+    isIssuesEvent, isPullRequestEvent,
+    isPullRequestReviewCommentEvent,
+    isPullRequestReviewEvent
 } from "../context";
-import * as core from "@actions/core";
 import {JunieTask} from "./types/junie";
+import * as core from "@actions/core";
+import {BranchInfo} from "../operations/branch";
 
-export async function prepareJunieInputs(
-    context: GitHubContext, mcpConfig: string) {
+export async function prepareJunieTask(context: GitHubContext, branchInfo: BranchInfo) {
     const junieTask: JunieTask = {}
 
     if (context.inputs.prompt) {
@@ -42,28 +45,12 @@ export async function prepareJunieInputs(
         junieTask.gitHubPullRequest = {url: context.payload.pull_request.html_url}
     }
 
-    core.setOutput('EJ_CLI_TOKEN', context.inputs.appToken);
+    if (context.inputs.resolveConflicts) {
+        junieTask.mergeTask = {branch: branchInfo.baseBranch, type: "merge"}
+    }
+
     core.setOutput('EJ_TASK', JSON.stringify(junieTask));
-    core.setOutput('EJ_MCP_CONFIG', mcpConfig);
     // core.setOutput('EJ_TASK_TEXT', junieTaskText);
+
+    return junieTask;
 }
-
-export function exportResultsOutputs(junieTitle: string,
-                                     junieSummary: string,
-                                     commitMessage?: string,
-                                     prTitle?: string,
-                                     prBody?: string): void {
-    core.setOutput('JUNIE_TITLE', junieTitle);
-    core.setOutput('JUNIE_SUMMARY', junieSummary);
-
-    if (commitMessage) {
-        core.setOutput('COMMIT_MESSAGE', commitMessage);
-    }
-
-    if (prTitle && prBody) {
-        core.setOutput('PR_TITLE', prTitle);
-        core.setOutput('PR_BODY', prBody);
-    }
-}
-
-

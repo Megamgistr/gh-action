@@ -7,7 +7,13 @@ export interface JunieTask {
     gitHubPullRequestReview?: GitHubPullRequestReview | null;
     gitHubPullRequestComment?: GitHubPullRequestComment | null;
     gitHubPullRequest?: GitHubPullRequest | null;
+    mergeTask?: MergeTask | null;
     textTask?: TextTask | null;
+}
+
+export interface MergeTask {
+    branch: string, // ref: branch, sha or tag
+    type: string, // rebase or merge
 }
 
 export interface GitHubIssue {
