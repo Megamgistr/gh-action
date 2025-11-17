@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import {
     GitHubContext,
-    isEntityContext, isPullRequestEvent
+    isEntityContext, isPullRequestEvent, isPushEvent
 } from "../context";
 import {checkHumanActor} from "../validation/actor";
 import {writeInitialFeedbackComment} from "../operations/comments/feedback";
@@ -81,6 +81,7 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
     console.log('Checking for conflicts...')
     const maxAttempts = 10
     const delay = 6000
+    const {owner, name} = context.payload.repository
     let attempt = 0
     let state = 'unknown'
     let result = false
@@ -88,20 +89,39 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
     while (attempt < maxAttempts) {
         if (isPullRequestEvent(context)) {
             const pr = await octokit.rest.pulls.get({
-                owner: context.payload.repository.owner.login,
-                repo: context.payload.repository.name,
+                owner: owner.login,
+                repo: name,
                 pull_number: context.entityNumber!,
             })
             state = pr.data.mergeable_state
-        } else {
-            throw new Error('Resolve conflicts only works for pull requests')
-        }
-        console.log(`Attempt ${attempt}: Mergeable state is ${state}`)
+        } else if (isPushEvent(context)) {
+            const branch = context.payload.ref.replace("refs/heads/", "");
 
-        if (state == 'unknown') {
-            attempt++
-            await new Promise(resolve => setTimeout(resolve, delay))
-        } else result = state == 'dirty';
+            const prs = await octokit.rest.pulls.list({
+                owner: owner.login,
+                repo: name,
+                head: `${owner}:${branch}`,
+                state: "open"
+            });
+
+            if (prs.data.length > 0) {
+                const prNumber = prs.data[0].number;
+                const pr = await octokit.rest.pulls.get({
+                    owner: owner.login,
+                    repo: name,
+                    pull_number: prNumber
+                });
+                state = pr.data.mergeable_state;
+            } else {
+                throw new Error('Resolve conflicts only works for pull requests')
+            }
+            console.log(`Attempt ${attempt}: Mergeable state is ${state}`)
+
+            if (state == 'unknown') {
+                attempt++
+                await new Promise(resolve => setTimeout(resolve, delay))
+            } else result = state == 'dirty';
+        }
     }
     return result
 }
