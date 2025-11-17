@@ -112,16 +112,19 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
                     pull_number: prNumber
                 });
                 state = pr.data.mergeable_state;
-            } else {
-                throw new Error('Resolve conflicts only works for pull requests')
+            } {
+                state = 'no prs'
             }
-            console.log(`Attempt ${attempt}: Mergeable state is ${state}`)
-
-            if (state == 'unknown') {
-                attempt++
-                await new Promise(resolve => setTimeout(resolve, delay))
-            } else result = state == 'dirty';
+        } else {
+            throw new Error('Resolve conflicts only works for pull requests')
         }
+        console.log(`Attempt ${attempt}: Mergeable state is ${state}`)
+
+        if (state == 'unknown') {
+            attempt++
+            await new Promise(resolve => setTimeout(resolve, delay))
+        } else result = state == 'dirty';
+
     }
     return result
 }
