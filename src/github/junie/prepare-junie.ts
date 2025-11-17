@@ -112,7 +112,8 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
                     pull_number: prNumber
                 });
                 state = pr.data.mergeable_state;
-            } {
+            }
+            {
                 state = 'no prs'
             }
         } else {
@@ -123,7 +124,11 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
         if (state == 'unknown') {
             attempt++
             await new Promise(resolve => setTimeout(resolve, delay))
-        } else result = state == 'dirty';
+        } else {
+            result = state == 'dirty'
+            break
+        }
+
 
     }
     return result
