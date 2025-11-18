@@ -1,5 +1,5 @@
 import * as core from "@actions/core";
-import {GitHubContext, isEntityContext, isPushEvent} from "../context";
+import {GitHubContext, isEntityContext, isPushEvent, isWorkflowDispatchEvent} from "../context";
 import {checkHumanActor} from "../validation/actor";
 import {writeInitialFeedbackComment} from "../operations/comments/feedback";
 import {setupBranch} from "../operations/branch";
@@ -11,6 +11,7 @@ import {checkWritePermissions} from "../validation/permissions";
 import {Octokits} from "../api/client";
 import {prepareJunieTask} from "./junie-tasks";
 import {prepareJunieCLIToken} from "./junie-token";
+import {RESOLVE_CONFLICTS_ACTION} from "../constants";
 
 
 export async function prepare({
@@ -64,7 +65,7 @@ async function shouldHandle(context: GitHubContext, octokit: Octokits): Promise<
     }
 
     if (context.inputs.resolveConflicts) {
-        return await hasConflicts(context, octokit)
+        return await shouldResolveConflicts(context, octokit)
     }
 
     if (context.inputs.prompt) {
@@ -74,61 +75,89 @@ async function shouldHandle(context: GitHubContext, octokit: Octokits): Promise<
 }
 
 
-async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<boolean> {
+async function shouldResolveConflicts(context: GitHubContext, octokit: Octokits): Promise<boolean> {
     console.log('Checking for conflicts...')
+    if (isWorkflowDispatchEvent(context)) {
+        return true;
+    }
+
+    const {owner, name} = context.payload.repository
+    const prs = []
+
+    if (context.isPR && context.entityNumber) {
+        const {data} = await octokit.rest.pulls.get({
+            owner: owner.login,
+            repo: name,
+            pull_number: context.entityNumber,
+        })
+        prs.push(data)
+    } else if (isPushEvent(context)) {
+        const branch = context.payload.ref.replace("refs/heads/", "");
+
+        const {data} = await octokit.rest.pulls.list({
+            owner: owner.login,
+            repo: name,
+            base: branch,
+            state: "open"
+        });
+
+        console.log(`Found ${JSON.stringify(data)} open pull requests for branch ${branch}`)
+        for (const pr of data) {
+            const {data} = await octokit.rest.pulls.get({
+                owner: owner.login,
+                repo: name,
+                pull_number: pr.number,
+            });
+            prs.push(data)
+        }
+    } else {
+        return false
+    }
+
+    await Promise.all(prs.map(pr => handlePr(context, octokit, pr)))
+
+    return false
+}
+
+async function handlePr(context: GitHubContext, octokit: Octokits, pr: any) {
     const maxAttempts = 10
     const delay = 6000
     const {owner, name} = context.payload.repository
     let attempt = 0
-    let state = 'unknown'
-    let result = false
+    let state = pr.mergeable_state
 
     while (attempt < maxAttempts) {
-        if (context.isPR && context.entityNumber) {
-            const pr = await octokit.rest.pulls.get({
-                owner: owner.login,
-                repo: name,
-                pull_number: context.entityNumber,
-            })
-            state = pr.data.mergeable_state
-        } else if (isPushEvent(context)) {
-            const branch = context.payload.ref.replace("refs/heads/", "");
-
-            const prs = await octokit.rest.pulls.list({
-                owner: owner.login,
-                repo: name,
-                base: branch,
-                state: "open"
-            });
-
-            console.log(`Found ${JSON.stringify(prs.data)} open pull requests for branch ${branch}`)
-
-            if (prs.data.length > 0) {
-                const prNumber = prs.data[0].number;
-                const pr = await octokit.rest.pulls.get({
-                    owner: owner.login,
-                    repo: name,
-                    pull_number: prNumber
-                });
-                state = pr.data.mergeable_state;
-            } else {
-                state = 'no prs'
-            }
-        } else {
-            throw new Error('Resolve conflicts only works for pull requests')
-        }
-        console.log(`Attempt ${attempt}: Mergeable state is ${state}`)
-
         if (!state || state == 'unknown') {
             attempt++
             await new Promise(resolve => setTimeout(resolve, delay))
+        } else if (state == 'dirty') {
+            await runResolveConflictsWorkflow(octokit, owner.login, name, pr.head.ref, pr.number)
+            return
         } else {
-            result = state == 'dirty'
-            break
+            return
         }
-
-
+        const {data} = await octokit.rest.pulls.get({
+            owner: owner.login,
+            repo: name,
+            pull_number: pr.number,
+        });
+        state = data.mergeable_state
     }
-    return result
+}
+
+async function runResolveConflictsWorkflow(octokit: Octokits, owner: string, repo: string, branch: string, prNumber: number) {
+    const ref = process.env.GITHUB_WORKFLOW_REF!;
+    const fileWithAt = ref.split('/').pop()!;
+    const file = fileWithAt.split('@')[0];
+    await octokit.rest.actions.createWorkflowDispatch({
+        owner,
+        repo,
+        workflow_id: file,
+        ref: branch,
+        inputs: {
+            action: RESOLVE_CONFLICTS_ACTION,
+            prNumber: prNumber
+        }
+    });
 }
 

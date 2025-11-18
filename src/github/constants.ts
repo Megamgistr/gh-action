@@ -1,3 +1,5 @@
+export const RESOLVE_CONFLICTS_ACTION = "resolve-conflicts";
+
 export const WORKING_BRANCH_PREFIX = "junie/";
 
 export const DEFAULT_TRIGGER_PHRASE = "@junie";

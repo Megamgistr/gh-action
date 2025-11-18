@@ -14,7 +14,7 @@ import {
     WorkflowDispatchEvent,
     WorkflowRunEvent,
 } from "@octokit/webhooks-types";
-import {DEFAULT_TRIGGER_PHRASE} from "./constants";
+import {DEFAULT_TRIGGER_PHRASE, RESOLVE_CONFLICTS_ACTION} from "./constants";
 
 
 export type ScheduleEvent = {
@@ -205,8 +205,18 @@ export function parseGitHubContext(): GitHubContext {
             break
         }
         case "workflow_dispatch": {
+            const payload = context.payload as WorkflowDispatchEvent;
+            let prNumber = undefined
+            let isPR = false
+            if (payload.inputs?.action == RESOLVE_CONFLICTS_ACTION) {
+                prNumber = payload.inputs?.prNumber as number
+                isPR = true
+            }
+
             parsedContext = {
                 ...commonFields,
+                isPR,
+                entityNumber: prNumber,
                 eventName: context.eventName,
                 payload: context.payload as unknown as WorkflowDispatchEvent,
             };
@@ -247,6 +257,10 @@ export function parseGitHubContext(): GitHubContext {
     core.setOutput('ACTOR_EMAIL', parsedContext.actorEmail);
     core.setOutput("PARSED_CONTEXT", JSON.stringify(parsedContext));
     return parsedContext;
+}
+
+export function isWorkflowDispatchEvent(context: GitHubContext): context is AutomationContext & { payload: WorkflowDispatchEvent } {
+    return context.eventName === "workflow_dispatch";
 }
 
 export function isCheckSuiteEvent(context: GitHubContext): context is AutomationContext & { payload: CheckSuiteEvent } {

@@ -1,15 +1,24 @@
-name: analyze-failed-checks.yml
+name: resolve conflicts
 on:
   pull_request:
     types: [synchronize, opened]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action name'
+        required: true
+        default: "resolve-conflicts"
+      prNumber:
+        description: "PR number"
+        required: true
 
 jobs:
   junie:
-    if: ${{ github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
+      actions: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
