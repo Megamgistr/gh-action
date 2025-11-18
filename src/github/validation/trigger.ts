@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import type {ParsedGitHubContext} from "../context";
+import type {GitHubContext, ParsedGitHubContext} from "../context";
 import {
     isIssueCommentEvent,
     isIssuesAssignedEvent,
@@ -10,7 +10,7 @@ import {
     isPullRequestReviewEvent,
 } from "../context";
 
-export function checkContainsTrigger(context: ParsedGitHubContext): boolean {
+export function checkContainsTrigger(context: GitHubContext): boolean {
     const {
         inputs: {assigneeTrigger, labelTrigger, triggerPhrase},
     } = context;
@@ -72,16 +72,26 @@ export function checkContainsTrigger(context: ParsedGitHubContext): boolean {
             return true;
         }
     }
+    const hasTrigger = isReviewOrCommentHasTrigger(context, triggerPhraseRegex)
 
+    if (hasTrigger) {
+        return true;
+    }
+
+    console.log(`No trigger was met for ${triggerPhrase}`);
+    return false;
+}
+
+export function isReviewOrCommentHasTrigger(context: GitHubContext, regExp: RegExp) {
     if (
         isPullRequestReviewEvent(context) &&
         (context.eventAction === "submitted" || context.eventAction === "edited")
     ) {
         const reviewBody = context.payload.review.body || "";
 
-        if (triggerPhraseRegex.test(reviewBody)) {
+        if (regExp.test(reviewBody)) {
             console.log(
-                `Pull request review contains exact trigger phrase '${triggerPhrase}'`,
+                `Pull request review contains exact trigger phrase '${regExp}'`,
             );
             return true;
         }
@@ -93,15 +103,11 @@ export function checkContainsTrigger(context: ParsedGitHubContext): boolean {
     ) {
         const commentBody = context.payload.comment.body;
 
-        if (triggerPhraseRegex.test(commentBody)) {
-            console.log(`Comment contains exact trigger phrase '${triggerPhrase}'`);
+        if (regExp.test(commentBody)) {
+            console.log(`Comment contains exact trigger phrase '${regExp}'`);
             return true;
         }
     }
-
-    console.log(`No trigger was met for ${triggerPhrase}`);
-
-    return false;
 }
 
 export function escapeRegExp(string: string) {
