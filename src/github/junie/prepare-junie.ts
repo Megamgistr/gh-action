@@ -87,11 +87,11 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
     let result = false
 
     while (attempt < maxAttempts) {
-        if (isPullRequestEvent(context)) {
+        if (context.isPR && context.entityNumber) {
             const pr = await octokit.rest.pulls.get({
                 owner: owner.login,
                 repo: name,
-                pull_number: context.entityNumber!,
+                pull_number: context.entityNumber,
             })
             state = pr.data.mergeable_state
         } else if (isPushEvent(context)) {
@@ -100,7 +100,7 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
             const prs = await octokit.rest.pulls.list({
                 owner: owner.login,
                 repo: name,
-                head: `${owner.login}:${branch}`,
+                base: branch,
                 state: "open"
             });
 
@@ -122,7 +122,7 @@ async function hasConflicts(context: GitHubContext, octokit: Octokits): Promise<
         }
         console.log(`Attempt ${attempt}: Mergeable state is ${state}`)
 
-        if (state == 'unknown') {
+        if (!state || state == 'unknown') {
             attempt++
             await new Promise(resolve => setTimeout(resolve, delay))
         } else {
