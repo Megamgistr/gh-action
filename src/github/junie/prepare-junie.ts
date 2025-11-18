@@ -163,7 +163,7 @@ async function runResolveConflictsWorkflow(octokit: Octokits, owner: string, rep
         ref: branch,
         inputs: {
             action: RESOLVE_CONFLICTS_ACTION,
-            prNumber
+            prNumber: String(prNumber)
         }
     });
 }
