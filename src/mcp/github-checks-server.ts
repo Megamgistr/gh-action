@@ -107,7 +107,7 @@ async function extractFailedChecksInfo(
 
     try {
         // Get check runs for the ref
-        const { data: checkRuns } = await octokit.rest.checks.listForRef({
+        const {data: checkRuns} = await octokit.rest.checks.listForRef({
             owner,
             repo,
             ref,
@@ -172,7 +172,7 @@ async function extractCheckRunLog(
 
         // Try to download workflow job logs
         try {
-            const logsResponse = await octokit.rest.actions.downloadJobLogsForWorkflowRun({ owner, repo, job_id: jobId });
+            const logsResponse = await octokit.rest.actions.downloadJobLogsForWorkflowRun({owner, repo, job_id: jobId});
             let logText: string;
             const data: unknown = (logsResponse as any).data;
             if (typeof data === 'string') {

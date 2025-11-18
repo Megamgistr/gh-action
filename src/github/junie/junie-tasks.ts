@@ -1,8 +1,8 @@
-import {Octokits} from "../api/client";
 import {
     GitHubContext,
     isIssueCommentEvent,
-    isIssuesEvent, isPullRequestEvent,
+    isIssuesEvent,
+    isPullRequestEvent,
     isPullRequestReviewCommentEvent,
     isPullRequestReviewEvent
 } from "../context";

@@ -1,5 +1,3 @@
-import {BranchInfo} from "./operations/branch";
-
 export const WORKING_BRANCH_PREFIX = "junie/";
 
 export const DEFAULT_TRIGGER_PHRASE = "@junie";
@@ -33,7 +31,7 @@ Details: ${details}
 ${jobLink}
 `
 
-export const PR_CREATED_FEEDBACK_COMMENT_TEMPLATE = (prLink: string) =>`${SUCCESS_FEEDBACK_COMMENT}\n PR link: ${prLink}`
+export const PR_CREATED_FEEDBACK_COMMENT_TEMPLATE = (prLink: string) => `${SUCCESS_FEEDBACK_COMMENT}\n PR link: ${prLink}`
 
 export const MANUALLY_PR_CREATE_FEEDBACK_COMMENT_TEMPLATE = (createPRLink: string) => `${SUCCESS_FEEDBACK_COMMENT}\n\nYou can create a PR manually: [Create Pull Request](${createPRLink})`
 

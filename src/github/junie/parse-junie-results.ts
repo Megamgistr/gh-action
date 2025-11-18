@@ -1,4 +1,4 @@
-import {readFile, access} from 'fs/promises';
+import {access, readFile} from 'fs/promises';
 import {join} from 'path';
 
 export interface JunieResults {

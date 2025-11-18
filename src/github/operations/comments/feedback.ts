@@ -1,17 +1,16 @@
 #!/usr/bin/env bun
 
 import * as core from "@actions/core";
-import {createJobRunLink, createCommentBody} from "./common";
-import {
-    GitHubContext,
-    isPullRequestReviewCommentEvent,
-} from "../../context";
+import {createCommentBody, createJobRunLink} from "./common";
+import {GitHubContext, isPullRequestReviewCommentEvent,} from "../../context";
 import type {Octokit} from "@octokit/rest";
 import {createOctokit} from "../../api/client";
 import {
     COMMIT_PUSHED_FEEDBACK_COMMENT_TEMPLATE,
-    ERROR_FEEDBACK_COMMENT_TEMPLATE, MANUALLY_PR_CREATE_FEEDBACK_COMMENT_TEMPLATE,
-    PR_CREATED_FEEDBACK_COMMENT_TEMPLATE, SUCCESS_FEEDBACK_COMMENT_WITH_RESULT
+    ERROR_FEEDBACK_COMMENT_TEMPLATE,
+    MANUALLY_PR_CREATE_FEEDBACK_COMMENT_TEMPLATE,
+    PR_CREATED_FEEDBACK_COMMENT_TEMPLATE,
+    SUCCESS_FEEDBACK_COMMENT_WITH_RESULT
 } from "../../constants";
 import {ActionType} from "../../../entrypoints/handle-results";
 import {GITHUB_SERVER_URL} from "../../api/config";
@@ -37,7 +36,7 @@ export async function writeInitialFeedbackComment(
                 comment_id: context.payload.comment.id,
                 body: initialBody,
             });
-        } else if(context.entityNumber) {
+        } else if (context.entityNumber) {
             response = await octokit.rest.issues.createComment({
                 owner: ownerLogin,
                 repo: name,

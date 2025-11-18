@@ -1,14 +1,14 @@
 #!/usr/bin/env bun
 
-import {
-    isIssuesEvent,
-    isIssuesAssignedEvent,
-    isIssueCommentEvent,
-    isPullRequestEvent,
-    isPullRequestReviewEvent,
-    isPullRequestReviewCommentEvent,
-} from "../context";
 import type {ParsedGitHubContext} from "../context";
+import {
+    isIssueCommentEvent,
+    isIssuesAssignedEvent,
+    isIssuesEvent,
+    isPullRequestEvent,
+    isPullRequestReviewCommentEvent,
+    isPullRequestReviewEvent,
+} from "../context";
 
 export function checkContainsTrigger(context: ParsedGitHubContext): boolean {
     const {

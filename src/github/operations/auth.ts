@@ -1,5 +1,5 @@
-import { GITHUB_SERVER_URL } from "../api/config";
-import { GitHubContext } from "../context";
+import {GITHUB_SERVER_URL} from "../api/config";
+import {GitHubContext} from "../context";
 import {$} from "bun";
 
 interface GitUser {

@@ -1,5 +1,5 @@
 import {GITHUB_API_URL} from "../github/api/config";
-import {writeFile, mkdir, readFile} from 'fs/promises';
+import {mkdir, readFile, writeFile} from 'fs/promises';
 import {join} from 'path';
 import {homedir} from 'os';
 import * as core from "@actions/core";

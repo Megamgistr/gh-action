@@ -1,8 +1,5 @@
 import * as core from "@actions/core";
-import {
-    GitHubContext,
-    isEntityContext, isPullRequestEvent, isPushEvent
-} from "../context";
+import {GitHubContext, isEntityContext, isPushEvent} from "../context";
 import {checkHumanActor} from "../validation/actor";
 import {writeInitialFeedbackComment} from "../operations/comments/feedback";
 import {setupBranch} from "../operations/branch";

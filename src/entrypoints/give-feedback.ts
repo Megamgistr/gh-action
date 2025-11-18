@@ -14,7 +14,7 @@ export async function giveFeedback() {
         }
         if (data.isJobFailed) {
             data.failureData = {error: process.env.ERROR}
-        } else{
+        } else {
             data.successData = {
                 actionToDo: process.env.ACTION_TO_DO as keyof typeof ActionType,
                 baseBranch: process.env.BASE_BRANCH,
@@ -26,7 +26,7 @@ export async function giveFeedback() {
             }
         }
 
-       await writeFinishFeedbackComment(data)
+        await writeFinishFeedbackComment(data)
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         core.setFailed(`Give feedback step failed with error: ${errorMessage}`);

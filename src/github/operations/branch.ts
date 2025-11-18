@@ -6,7 +6,8 @@ import {
     GitHubContext,
     isPullRequestEvent,
     isPullRequestReviewCommentEvent,
-    isPullRequestReviewEvent, isPushEvent,
+    isPullRequestReviewEvent,
+    isPushEvent,
 } from "../context";
 import type {Octokits} from "../api/client";
 import {WORKING_BRANCH_PREFIX} from "../constants";

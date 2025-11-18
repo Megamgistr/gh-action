@@ -1,13 +1,18 @@
 import * as github from "@actions/github";
 import * as core from "@actions/core";
 import {
-    IssuesEvent,
-    IssuesAssignedEvent,
+    CheckSuiteEvent,
     IssueCommentEvent,
+    IssuesAssignedEvent,
+    IssuesEvent,
     PullRequestEvent,
-    PullRequestReviewEvent,
     PullRequestReviewCommentEvent,
-    WorkflowRunEvent, WorkflowDispatchEvent, RepositoryDispatchEvent, Repository, CheckSuiteEvent, PushEvent,
+    PullRequestReviewEvent,
+    PushEvent,
+    Repository,
+    RepositoryDispatchEvent,
+    WorkflowDispatchEvent,
+    WorkflowRunEvent,
 } from "@octokit/webhooks-types";
 import {DEFAULT_TRIGGER_PHRASE} from "./constants";
 
@@ -135,7 +140,7 @@ export function parseGitHubContext(): GitHubContext {
         }
         case "issue_comment": {
             const payload = context.payload as IssueCommentEvent;
-            parsedContext =  {
+            parsedContext = {
                 ...commonFields,
                 eventName: context.eventName,
                 payload,
@@ -147,7 +152,7 @@ export function parseGitHubContext(): GitHubContext {
         case "pull_request":
         case "pull_request_target": {
             const payload = context.payload as PullRequestEvent;
-            parsedContext =  {
+            parsedContext = {
                 ...commonFields,
                 eventName: "pull_request",
                 payload,
@@ -169,7 +174,7 @@ export function parseGitHubContext(): GitHubContext {
         }
         case "pull_request_review_comment": {
             const payload = context.payload as PullRequestReviewCommentEvent;
-            parsedContext =  {
+            parsedContext = {
                 ...commonFields,
                 eventName: context.eventName,
                 payload,
@@ -208,7 +213,7 @@ export function parseGitHubContext(): GitHubContext {
             break;
         }
         case "repository_dispatch": {
-            parsedContext =  {
+            parsedContext = {
                 ...commonFields,
                 eventName: context.eventName,
                 payload: context.payload as unknown as RepositoryDispatchEvent,
@@ -226,7 +231,7 @@ export function parseGitHubContext(): GitHubContext {
         case "workflow_run": {
             const payload = context.payload as WorkflowRunEvent;
             const isPR = payload.workflow_run.pull_requests.length > 0
-            parsedContext =  {
+            parsedContext = {
                 ...commonFields,
                 eventName: context.eventName,
                 payload: context.payload as unknown as WorkflowRunEvent,
@@ -244,7 +249,7 @@ export function parseGitHubContext(): GitHubContext {
     return parsedContext;
 }
 
-export function isCheckSuiteEvent(context: GitHubContext) : context is AutomationContext & { payload: CheckSuiteEvent } {
+export function isCheckSuiteEvent(context: GitHubContext): context is AutomationContext & { payload: CheckSuiteEvent } {
     return context.eventName === "check_suite";
 }
 

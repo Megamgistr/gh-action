@@ -3,7 +3,7 @@
 import * as core from "@actions/core";
 import {setupGitHubToken} from "../github/token";
 import {createOctokit} from "../github/api/client";
-import {parseGitHubContext } from "../github/context";
+import {parseGitHubContext} from "../github/context";
 import {prepare} from "../github/junie/prepare-junie";
 
 async function run() {
