@@ -1,7 +1,6 @@
 name: resolve conflicts
 on:
-  pull_request:
-    types: [synchronize, opened]
+  push:
   workflow_dispatch:
     inputs:
       action:
