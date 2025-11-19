@@ -4,7 +4,7 @@ import {checkHumanActor} from "../validation/actor";
 import {writeInitialFeedbackComment} from "../operations/comments/feedback";
 import {setupBranch} from "../operations/branch";
 import {PrepareJunieOptions} from "./types/junie";
-import {checkContainsTrigger, isReviewOrCommentHasTrigger} from "../validation/trigger";
+import {checkContainsTrigger} from "../validation/trigger";
 import {gitAuth} from "../operations/auth";
 import {prepareMcpConfig} from "../../mcp/prepare-mcp-config";
 import {checkWritePermissions} from "../validation/permissions";
@@ -12,8 +12,7 @@ import {Octokits} from "../api/client";
 import {prepareJunieTask} from "./junie-tasks";
 import {prepareJunieCLIToken} from "./junie-token";
 import {
-    RESOLVE_CONFLICTS_ACTION,
-    RESOLVE_CONFLICTS_TRIGGER_PHRASE_REGEXP
+    RESOLVE_CONFLICTS_ACTION
 } from "../constants";
 
 
@@ -71,13 +70,11 @@ async function shouldHandle(context: GitHubContext, octokit: Octokits): Promise<
         return true;
     }
 
-    const hasTrigger = checkContainsTrigger(context)
-
-    if (context.inputs.resolveConflicts || (hasTrigger && isReviewOrCommentHasTrigger(context, RESOLVE_CONFLICTS_TRIGGER_PHRASE_REGEXP))) {
+    if (context.inputs.resolveConflicts) {
         return await shouldResolveConflicts(context, octokit)
     }
 
-    return isEntityContext(context) && hasTrigger;
+    return isEntityContext(context) && checkContainsTrigger(context);
 }
 
 

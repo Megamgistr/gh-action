@@ -9,6 +9,8 @@ import {
 import {JunieTask} from "./types/junie";
 import * as core from "@actions/core";
 import {BranchInfo} from "../operations/branch";
+import {isReviewOrCommentHasTrigger} from "../validation/trigger";
+import {RESOLVE_CONFLICTS_TRIGGER_PHRASE_REGEXP} from "../constants";
 
 export async function prepareJunieTask(context: GitHubContext, branchInfo: BranchInfo) {
     const junieTask: JunieTask = {}
@@ -45,7 +47,7 @@ export async function prepareJunieTask(context: GitHubContext, branchInfo: Branc
         junieTask.gitHubPullRequest = {url: context.payload.pull_request.html_url}
     }
 
-    if (context.inputs.resolveConflicts) {
+    if (context.inputs.resolveConflicts || isReviewOrCommentHasTrigger(context, RESOLVE_CONFLICTS_TRIGGER_PHRASE_REGEXP)) {
         junieTask.mergeTask = {branch: branchInfo.baseBranch, type: "merge"}
     }
 
