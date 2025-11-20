@@ -168,6 +168,13 @@ runs:
         new_branch: ${{ steps.prepare.outputs.WORKING_BRANCH }}
         message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
 
+    - name: Push changes
+      id: push
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.ACTION_TO_DO == 'PUSH'
+      shell: bash
+      run: |
+        git push
+
     - name: Give success feedback
       if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.prepare.outputs.INIT_COMMENT_ID && success()
       shell: bash

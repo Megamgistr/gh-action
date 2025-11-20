@@ -7,6 +7,7 @@ export enum ActionType {
     WRITE_COMMENT = 'WRITE_COMMENT',
     CREATE_PR = 'CREATE_PR',
     COMMIT_CHANGES = 'COMMIT_CHANGES',
+    PUSH = 'PUSH',
     NOTHING = 'NOTHING'
 }
 
@@ -38,6 +39,7 @@ export async function handleResults() {
                     PR_BODY_TEMPLATE(body, issueId));
                 break;
             case ActionType.COMMIT_CHANGES:
+            case ActionType.PUSH:
                 exportResultsOutputs(title, body, commitMessage);
                 break;
             case ActionType.WRITE_COMMENT:
@@ -54,22 +56,26 @@ export async function handleResults() {
 }
 
 async function getActionToDo(): Promise<ActionType> {
-    // Check if there are changed files
     const hasChangedFiles = await checkForChangedFiles();
+    const hasUnpushedCommits = await checkForUnpushedCommits();
     const initCommentId = process.env.INIT_COMMENT_ID;
     const currentBranch = process.env.CURRENT_BRANCH!;
     const workingBranch = process.env.WORKING_BRANCH!;
 
 
     console.log(`Has changed files: ${hasChangedFiles}`);
+    console.log(`Has unpushed commits: ${hasUnpushedCommits}`);
     console.log(`Init comment ID: ${initCommentId}`);
     console.log(`Current branch: ${currentBranch}`);
     console.log(`Working branch: ${workingBranch}`);
 
     let action: ActionType
-    if (!hasChangedFiles && initCommentId) {
-        console.log('No changes found but has comment ID - will write comment');
+    if (!hasChangedFiles && !hasUnpushedCommits && initCommentId) {
+        console.log('No changes and no unpushed commits but has comment ID - will write comment');
         action = ActionType.WRITE_COMMENT;
+    } else if (!hasChangedFiles && hasUnpushedCommits) {
+        console.log('No changes but has unpushed commits - will push');
+        action = ActionType.PUSH;
     } else if (hasChangedFiles && currentBranch !== workingBranch) {
         console.log('Changes found and branches differ - will create PR');
         action = ActionType.CREATE_PR;
@@ -96,6 +102,20 @@ async function checkForChangedFiles(): Promise<boolean> {
     } catch (error) {
         console.error('Error checking for changed files:', error);
         // If we can't check, assume there are no changes to be safe
+        return false;
+    }
+}
+
+async function checkForUnpushedCommits(): Promise<boolean> {
+    try {
+        // Check for unpushed commits (commits that exist locally but not in upstream)
+        const unpushedCommits = execSync('git log @{u}..HEAD --oneline', {encoding: 'utf-8'});
+
+        // If git log returns any output, there are unpushed commits
+        return unpushedCommits.trim().length > 0;
+    } catch (error) {
+        console.error('Error checking for unpushed commits:', error);
+        // If we can't check (e.g., no upstream branch), assume there are no unpushed commits
         return false;
     }
 }

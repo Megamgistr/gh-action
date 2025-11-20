@@ -135,6 +135,10 @@ function getSuccessBody(repoFullName: string, successData: SuccessFeedbackData):
             console.log(`Commit pushed to current branch: ${successData.commitSHA}`);
             result = COMMIT_PUSHED_FEEDBACK_COMMENT_TEMPLATE(successData.commitSHA!, successData.junieTitle!, successData.junieSummary!);
             break;
+        case "PUSH":
+            console.log('Unpushed commits were pushed to remote');
+            result = SUCCESS_FEEDBACK_COMMENT_WITH_RESULT(successData.junieTitle || 'Changes pushed', successData.junieSummary || 'Unpushed commits have been pushed to the remote branch');
+            break;
         case "CREATE_PR":
             if (successData.prLink) {
                 console.log(`PR was created: ${successData.prLink}`);
