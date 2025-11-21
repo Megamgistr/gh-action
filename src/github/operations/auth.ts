@@ -2,6 +2,8 @@ import {GITHUB_SERVER_URL} from "../api/config";
 import {GitHubContext} from "../context";
 import {$} from "bun";
 import type {Octokits} from "../api/client";
+import {GITHUB_ACTIONS_BOT} from "../constants";
+import type {GitHubTokenConfig} from "../token";
 
 interface GitUser {
     login: string;
@@ -18,8 +20,14 @@ export interface TokenOwner {
  * Fetches information about the owner of the provided GitHub token.
  * This can be a user, bot, or GitHub App installation.
  */
-export async function fetchTokenOwnerInfo(octokit: Octokits): Promise<TokenOwner> {
+export async function getTokenOwnerInfo(octokit: Octokits, tokenConfig: GitHubTokenConfig): Promise<TokenOwner> {
     try {
+        if (tokenConfig.isDefaultToken()) {
+            console.log("Using default GITHUB_TOKEN - skipping token owner API call (insufficient permissions)");
+            // Use well-known github-actions bot credentials for default token
+            return GITHUB_ACTIONS_BOT;
+        }
+        console.log("Using custom token - fetching token owner info");
         const { data } = await octokit.rest.users.getAuthenticated();
 
         console.log(`Token owner: ${data.login} (ID: ${data.id}, Type: ${data.type})`);
@@ -45,10 +53,9 @@ export async function fetchTokenOwnerInfo(octokit: Octokits): Promise<TokenOwner
     }
 }
 
-export async function gitAuth(githubToken: string, parsedContext: GitHubContext) {
+export async function gitAuth(parsedContext: GitHubContext, tokenConfig: GitHubTokenConfig) {
     console.log("Configuring git authentication...");
-    const defaultToken = process.env.DEFAULT_WORKFLOW_TOKEN;
-    if (githubToken === defaultToken) {
+    if (tokenConfig.isDefaultToken()) {
         console.log("Using default token for git authentication");
         return;
     }
@@ -92,7 +99,7 @@ export async function gitAuth(githubToken: string, parsedContext: GitHubContext)
 
     const owner = parsedContext.payload.repository.owner.login;
     const repo = parsedContext.payload.repository.name;
-    const remoteUrl = `https://x-access-token:${githubToken}@${serverUrl.host}/${owner}/${repo}.git`;
+    const remoteUrl = `https://x-access-token:${tokenConfig.workingToken}@${serverUrl.host}/${owner}/${repo}.git`;
 
     await $`git remote set-url origin ${remoteUrl}`;
     console.log("Git authentication configured successfully");

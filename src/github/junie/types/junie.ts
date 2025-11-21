@@ -1,5 +1,6 @@
 import {GitHubContext} from "../../context";
 import {Octokits} from "../../api/client";
+import type {GitHubTokenConfig} from "../../token";
 
 
 export interface JunieTask {
@@ -41,5 +42,5 @@ export interface TextTask {
 export type PrepareJunieOptions = {
     context: GitHubContext;
     octokit: Octokits;
-    githubToken: string;
+    tokenConfig: GitHubTokenConfig;
 };

@@ -3,6 +3,7 @@ import {mkdir, readFile, writeFile} from 'fs/promises';
 import {join} from 'path';
 import {homedir} from 'os';
 import * as core from "@actions/core";
+import {OUTPUT_VARS} from "../constants/environment";
 
 type PrepareConfigParams = {
     junieWorkingDir: string;
@@ -62,6 +63,6 @@ export async function prepareMcpConfig(
     await writeFile(mcpConfigPath, configJsonString, 'utf-8');
     console.log(`File content ${await readFile(mcpConfigPath)}`)
     console.log(`MCP config written to: ${mcpConfigPath}`);
-    core.setOutput('EJ_MCP_CONFIG', configJsonString);
+    core.setOutput(OUTPUT_VARS.EJ_MCP_CONFIG, configJsonString);
     return configJsonString;
 }

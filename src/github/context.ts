@@ -16,6 +16,7 @@ import {
 } from "@octokit/webhooks-types";
 import {DEFAULT_TRIGGER_PHRASE, RESOLVE_CONFLICTS_ACTION} from "./constants";
 import type {TokenOwner} from "./operations/auth";
+import {OUTPUT_VARS} from "../constants/environment";
 
 
 export type ScheduleEvent = {
@@ -254,9 +255,9 @@ export function parseGitHubContext(tokenOwner: TokenOwner): GitHubContext {
         default:
             throw new Error(`Unsupported event type: ${context.eventName}`);
     }
-    core.setOutput('ACTOR_NAME', parsedContext.actor);
-    core.setOutput('ACTOR_EMAIL', parsedContext.actorEmail);
-    core.setOutput("PARSED_CONTEXT", JSON.stringify(parsedContext));
+    core.setOutput(OUTPUT_VARS.ACTOR_NAME, parsedContext.actor);
+    core.setOutput(OUTPUT_VARS.ACTOR_EMAIL, parsedContext.actorEmail);
+    core.setOutput(OUTPUT_VARS.PARSED_CONTEXT, JSON.stringify(parsedContext));
     return parsedContext;
 }
 

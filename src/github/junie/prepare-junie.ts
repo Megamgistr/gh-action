@@ -14,23 +14,24 @@ import {prepareJunieCLIToken} from "./junie-token";
 import {
     RESOLVE_CONFLICTS_ACTION
 } from "../constants";
+import {OUTPUT_VARS} from "../../constants/environment";
 
 
 export async function prepare({
                                   context,
                                   octokit,
-                                  githubToken,
+                                  tokenConfig,
                               }: PrepareJunieOptions) {
     const handle = await shouldHandle(context, octokit)
 
     if (!handle) {
         console.log("No need to run junie")
-        core.setOutput('SHOULD_SKIP', 'true');
+        core.setOutput(OUTPUT_VARS.SHOULD_SKIP, 'true');
         return;
     }
-    core.setOutput('SHOULD_SKIP', 'false');
+    core.setOutput(OUTPUT_VARS.SHOULD_SKIP, 'false');
 
-    await gitAuth(githubToken, context)
+    await gitAuth(context, tokenConfig)
 
     if (isEntityContext(context)) {
         await checkHumanActor(octokit.rest, context);
@@ -43,7 +44,7 @@ export async function prepare({
     await prepareMcpConfig({
         junieWorkingDir: context.inputs.junieWorkingDir,
         allowedMcpServers: context.inputs.allowedMcpServers ? context.inputs.allowedMcpServers.split(',') : [],
-        githubToken: githubToken,
+        githubToken: tokenConfig.workingToken,
         owner: context.payload.repository.owner.login,
         repo: context.payload.repository.name,
         currentBranch: branchInfo.currentBranch,

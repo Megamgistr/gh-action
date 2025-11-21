@@ -2,12 +2,13 @@ import * as core from "@actions/core";
 import {FinishFeedbackData, writeFinishFeedbackComment} from "../github/operations/comments/feedback";
 import {GitHubContext} from "../github/context";
 import {ActionType} from "./handle-results";
+import {ENV_VARS, OUTPUT_VARS} from "../constants/environment";
 
 
 export async function giveFeedback() {
     try {
         const data: FinishFeedbackData = {
-            githubToken: process.env.GITHUB_TOKEN!,
+            githubToken: process.env[ENV_VARS.GITHUB_TOKEN]!,
             initCommentId: process.env.INIT_COMMENT_ID!,
             isJobFailed: process.env.IS_JOB_FAILED === 'true',
             parsedContext: JSON.parse(process.env.PARSED_CONTEXT!) as GitHubContext
@@ -30,7 +31,7 @@ export async function giveFeedback() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         core.setFailed(`Give feedback step failed with error: ${errorMessage}`);
-        core.setOutput("EXCEPTION", errorMessage);
+        core.setOutput(OUTPUT_VARS.EXCEPTION, errorMessage);
         process.exit(1);
     }
 }

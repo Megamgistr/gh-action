@@ -11,6 +11,7 @@ import * as core from "@actions/core";
 import {BranchInfo} from "../operations/branch";
 import {isReviewOrCommentHasTrigger} from "../validation/trigger";
 import {RESOLVE_CONFLICTS_TRIGGER_PHRASE_REGEXP} from "../constants";
+import {OUTPUT_VARS} from "../../constants/environment";
 
 export async function prepareJunieTask(context: GitHubContext, branchInfo: BranchInfo) {
     const junieTask: JunieTask = {}
@@ -51,8 +52,8 @@ export async function prepareJunieTask(context: GitHubContext, branchInfo: Branc
         junieTask.mergeTask = {branch: branchInfo.baseBranch, type: "merge"}
     }
 
-    core.setOutput('EJ_TASK', JSON.stringify(junieTask));
-    // core.setOutput('EJ_TASK_TEXT', junieTaskText);
+    core.setOutput(OUTPUT_VARS.EJ_TASK, JSON.stringify(junieTask));
+    // core.setOutput(OUTPUT_VARS.EJ_TASK_TEXT, junieTaskText);
 
     return junieTask;
 }

@@ -1,3 +1,9 @@
+export const GITHUB_ACTIONS_BOT = {
+    login: "github-actions[bot]",
+    id: 41898282, // Official GitHub Actions bot ID
+    type: "Bot" as const,
+} as const;
+
 export const RESOLVE_CONFLICTS_ACTION = "resolve-conflicts";
 
 export const RESOLVE_CONFLICTS_TRIGGER_PHRASE = "resolve conflicts"

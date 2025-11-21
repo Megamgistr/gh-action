@@ -14,6 +14,7 @@ import {
 } from "../../constants";
 import {ActionType} from "../../../entrypoints/handle-results";
 import {GITHUB_SERVER_URL} from "../../api/config";
+import {OUTPUT_VARS} from "../../../constants/environment";
 
 export async function writeInitialFeedbackComment(
     octokit: Octokit,
@@ -49,7 +50,7 @@ export async function writeInitialFeedbackComment(
         }
         console.log(`Created initial comment with ID: ${response.data.id}`);
         const initCommentId = response.data.id;
-        core.setOutput('INIT_COMMENT_ID', initCommentId);
+        core.setOutput(OUTPUT_VARS.INIT_COMMENT_ID, initCommentId);
 
         return initCommentId;
     } catch (error) {

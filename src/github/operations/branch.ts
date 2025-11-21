@@ -11,6 +11,7 @@ import {
 } from "../context";
 import type {Octokits} from "../api/client";
 import {WORKING_BRANCH_PREFIX} from "../constants";
+import {OUTPUT_VARS} from "../../constants/environment";
 
 export type BranchInfo = {
     currentBranch: string;
@@ -147,8 +148,8 @@ async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
 
 export async function setupBranch(octokit: Octokits, context: GitHubContext) {
     let branchInfo = await setupWorkingBranch(context, octokit)
-    core.setOutput('BASE_BRANCH', branchInfo.baseBranch);
-    core.setOutput('WORKING_BRANCH', branchInfo.workingBranch);
-    core.setOutput("CURRENT_BRANCH", branchInfo.currentBranch);
+    core.setOutput(OUTPUT_VARS.BASE_BRANCH, branchInfo.baseBranch);
+    core.setOutput(OUTPUT_VARS.WORKING_BRANCH, branchInfo.workingBranch);
+    core.setOutput(OUTPUT_VARS.CURRENT_BRANCH, branchInfo.currentBranch);
     return branchInfo;
 }

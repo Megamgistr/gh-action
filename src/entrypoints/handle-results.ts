@@ -2,6 +2,7 @@ import {COMMIT_MESSAGE_TEMPLATE, PR_BODY_TEMPLATE, PR_TITLE_TEMPLATE} from "../g
 import {GitHubContext, isEntityContext} from "../github/context";
 import {execSync} from 'child_process';
 import * as core from "@actions/core";
+import {OUTPUT_VARS} from "../constants/environment";
 
 export enum ActionType {
     WRITE_COMMENT = 'WRITE_COMMENT',
@@ -50,7 +51,7 @@ export async function handleResults() {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         core.setFailed(`Handle results step failed with error: ${errorMessage}`);
-        core.setOutput("EXCEPTION", errorMessage);
+        core.setOutput(OUTPUT_VARS.EXCEPTION, errorMessage);
         process.exit(1);
     }
 }
@@ -88,7 +89,7 @@ async function getActionToDo(): Promise<ActionType> {
     }
 
     console.log("Action to do:", action);
-    core.setOutput('ACTION_TO_DO', action);
+    core.setOutput(OUTPUT_VARS.ACTION_TO_DO, action);
     return action;
 }
 
@@ -125,16 +126,16 @@ function exportResultsOutputs(junieTitle: string,
                               commitMessage?: string,
                               prTitle?: string,
                               prBody?: string): void {
-    core.setOutput('JUNIE_TITLE', junieTitle);
-    core.setOutput('JUNIE_SUMMARY', junieSummary);
+    core.setOutput(OUTPUT_VARS.JUNIE_TITLE, junieTitle);
+    core.setOutput(OUTPUT_VARS.JUNIE_SUMMARY, junieSummary);
 
     if (commitMessage) {
-        core.setOutput('COMMIT_MESSAGE', commitMessage);
+        core.setOutput(OUTPUT_VARS.COMMIT_MESSAGE, commitMessage);
     }
 
     if (prTitle && prBody) {
-        core.setOutput('PR_TITLE', prTitle);
-        core.setOutput('PR_BODY', prBody);
+        core.setOutput(OUTPUT_VARS.PR_TITLE, prTitle);
+        core.setOutput(OUTPUT_VARS.PR_BODY, prBody);
     }
 }
 
