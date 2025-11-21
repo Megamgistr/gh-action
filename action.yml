@@ -141,6 +141,16 @@ runs:
         if-no-files-found: warn
         include-hidden-files: true
 
+    - uses: EndBug/add-and-commit@v9
+      name: Commit changes
+      id: commit
+      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && (steps.junie-run-results.outputs.ACTION_TO_DO == 'COMMIT_CHANGES' || steps.junie-run-results.outputs.ACTION_TO_DO == 'CREATE_PR')
+      with:
+        author_name: ${{ steps.prepare.outputs.ACTOR_NAME }}
+        author_email: ${{ steps.prepare.outputs.ACTOR_EMAIL }}
+        message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
+        new_branch: ${{ steps.prepare.outputs.WORKING_BRANCH }}
+
     - name: Make Pull Request for the changes
       if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.ACTION_TO_DO == 'CREATE_PR'
       uses: peter-evans/create-pull-request@v7
@@ -153,17 +163,7 @@ runs:
           title: ${{ steps.junie-run-results.outputs.PR_TITLE }}
           body: ${{ steps.junie-run-results.outputs.PR_BODY }}
           branch: ${{ steps.prepare.outputs.WORKING_BRANCH }}
-          base: ${{ steps.prepare.outputs.BASE_BRANCH }}
-
-    - uses: EndBug/add-and-commit@v9
-      name: Commit changes
-      id: commit
-      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.ACTION_TO_DO == 'COMMIT_CHANGES'
-      with:
-        author_name: ${{ steps.prepare.outputs.ACTOR_NAME }}
-        author_email: ${{ steps.prepare.outputs.ACTOR_EMAIL }}
-        message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
-        new_branch: ${{ steps.prepare.outputs.WORKING_BRANCH }}
+          base: ${{ steps.prepare.outputs.BASE_BRANCH }}F
 
     - name: Push changes
       id: push
