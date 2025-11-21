@@ -163,7 +163,7 @@ runs:
         author_name: ${{ steps.prepare.outputs.ACTOR_NAME }}
         author_email: ${{ steps.prepare.outputs.ACTOR_EMAIL }}
         message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
-        push: true
+        new_branch: ${{ steps.prepare.outputs.WORKING_BRANCH }}
 
     - name: Push changes
       id: push
