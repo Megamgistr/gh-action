@@ -163,7 +163,7 @@ runs:
           title: ${{ steps.junie-run-results.outputs.PR_TITLE }}
           body: ${{ steps.junie-run-results.outputs.PR_BODY }}
           branch: ${{ steps.prepare.outputs.WORKING_BRANCH }}
-          base: ${{ steps.prepare.outputs.BASE_BRANCH }}F
+          base: ${{ steps.prepare.outputs.BASE_BRANCH }}
 
     - name: Push changes
       id: push
