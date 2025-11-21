@@ -15,6 +15,7 @@ import {
     WorkflowRunEvent,
 } from "@octokit/webhooks-types";
 import {DEFAULT_TRIGGER_PHRASE, RESOLVE_CONFLICTS_ACTION} from "./constants";
+import type {TokenOwner} from "./operations/auth";
 
 
 export type ScheduleEvent = {
@@ -48,10 +49,12 @@ type BaseContext = {
     eventAction?: string;
     actor: string;
     actorEmail: string;
+    tokenOwner: TokenOwner;
     entityNumber?: number;
     isPR?: boolean;
     inputs: {
         resolveConflicts: boolean;
+        createNewBranchForPR: boolean;
         junieWorkingDir: string;
         appToken: string;
         baseBranch?: string;
@@ -61,8 +64,6 @@ type BaseContext = {
         assigneeTrigger: string;
         labelTrigger: string;
         workingBranch?: string;
-        botId?: string;
-        botName?: string;
         allowedMcpServers?: string;
     };
 };
@@ -101,15 +102,17 @@ export type AutomationContext = BaseContext & {
 
 export type GitHubContext = ParsedGitHubContext | AutomationContext;
 
-export function parseGitHubContext(): GitHubContext {
+export function parseGitHubContext(tokenOwner: TokenOwner): GitHubContext {
     const context = github.context;
     const commonFields = {
         runId: process.env.GITHUB_RUN_ID!,
         eventAction: context.payload.action,
         actor: context.actor,
         actorEmail: getActorEmail(),
+        tokenOwner,
         inputs: {
             resolveConflicts: process.env.RESOLVE_CONFLICTS == "true",
+            createNewBranchForPR: process.env.CREATE_NEW_BRANCH_FOR_PR == "true",
             junieWorkingDir: process.env.JUNIE_WORKING_DIR!,
             headRef: process.env.GITHUB_HEAD_REF,
             appToken: process.env.APP_TOKEN!,
@@ -119,8 +122,6 @@ export function parseGitHubContext(): GitHubContext {
             labelTrigger: process.env.LABEL_TRIGGER ?? "",
             baseBranch: process.env.BASE_BRANCH,
             targetBranch: process.env.TARGET_BRANCH,
-            botId: process.env.BOT_ID,
-            botName: process.env.BOT_NAME,
             allowedMcpServers: process.env.ALLOWED_MCP_SERVERS,
         },
     };

@@ -23,6 +23,10 @@ inputs:
     description: "Whether to resolve conflicts automatically"
     required: false
     default: "false"
+  create_new_branch_for_pr:
+    description: "Whether to create a new branch for PR instead of pushing to the same branch"
+    required: false
+    default: "false"
 
   # Junie configuration
   prompt:
@@ -47,12 +51,6 @@ inputs:
     required: false
   custom_github_token:
     description: "GitHub token with repo and pull request permissions (optional if using GitHub App)"
-    required: false
-  bot_id:
-    description: "GitHub App ID (optional if github_token is GitHub App token)"
-    required: false
-  bot_name:
-    description: "GitHub App name (optional if github_token is GitHub App token)"
     required: false
 
 outputs:
@@ -89,11 +87,10 @@ runs:
         TARGET_BRANCH: ${{ github.head_ref }}
         OVERRIDE_GITHUB_TOKEN: ${{ inputs.custom_github_token }}
         DEFAULT_WORKFLOW_TOKEN: ${{ github.token }}
-        BOT_ID: ${{ inputs.bot_id }}
-        BOT_NAME: ${{ inputs.bot_name }}
         JUNIE_WORKING_DIR: ${{ inputs.junie_work_dir }}
         ALLOWED_MCP_SERVERS: ${{ inputs.allowed_mcp_servers }}
         RESOLVE_CONFLICTS: ${{ inputs.resolve_conflicts }}
+        CREATE_NEW_BRANCH_FOR_PR: ${{ inputs.create_new_branch_for_pr }}
         ALL_INPUTS: ${{ toJson(inputs) }}
 
 
@@ -165,15 +162,15 @@ runs:
       with:
         author_name: ${{ steps.prepare.outputs.ACTOR_NAME }}
         author_email: ${{ steps.prepare.outputs.ACTOR_EMAIL }}
-        new_branch: ${{ steps.prepare.outputs.WORKING_BRANCH }}
         message: ${{ steps.junie-run-results.outputs.COMMIT_MESSAGE }}
+        push: true
 
     - name: Push changes
       id: push
       if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.ACTION_TO_DO == 'PUSH'
       shell: bash
       run: |
-        git push
+        git push --set-upstream origin HEAD
 
     - name: Give success feedback
       if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.prepare.outputs.INIT_COMMENT_ID && success()

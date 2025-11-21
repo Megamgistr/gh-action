@@ -5,12 +5,15 @@ import {setupGitHubToken} from "../github/token";
 import {createOctokit} from "../github/api/client";
 import {parseGitHubContext} from "../github/context";
 import {prepare} from "../github/junie/prepare-junie";
+import {fetchTokenOwnerInfo} from "../github/operations/auth";
 
 async function run() {
     try {
         const githubToken = await setupGitHubToken();
         const octokit = createOctokit(githubToken);
-        const context = parseGitHubContext();
+        const tokenOwner = await fetchTokenOwnerInfo(octokit);
+
+        const context = parseGitHubContext(tokenOwner);
         console.log("Parsed context:", context);
 
         await prepare({
