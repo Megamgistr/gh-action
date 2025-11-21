@@ -155,15 +155,16 @@ runs:
       if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.junie-run-results.outputs.ACTION_TO_DO == 'CREATE_PR'
       id: pull-request
       shell: bash
-      env:
-        GH_TOKEN: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
+      continue-on-error: true
       run: |
-        PR_URL=$(gh pr create \
-          --title "${{ steps.junie-run-results.outputs.PR_TITLE }}" \
-          --body "${{ steps.junie-run-results.outputs.PR_BODY }}" \
-          --base "${{ steps.prepare.outputs.BASE_BRANCH }}" \
-          --head "${{ steps.prepare.outputs.WORKING_BRANCH }}")
-        echo "pull-request-url=$PR_URL" >> $GITHUB_OUTPUT
+        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/create-pr.ts
+      env:
+        GITHUB_TOKEN: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
+        PARSED_CONTEXT: ${{ steps.prepare.outputs.PARSED_CONTEXT }}
+        PR_TITLE: ${{ steps.junie-run-results.outputs.PR_TITLE }}
+        PR_BODY: ${{ steps.junie-run-results.outputs.PR_BODY }}
+        BASE_BRANCH: ${{ steps.prepare.outputs.BASE_BRANCH }}
+        WORKING_BRANCH: ${{ steps.prepare.outputs.WORKING_BRANCH }}
 
     - name: Push changes
       id: push
