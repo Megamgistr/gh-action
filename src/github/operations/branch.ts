@@ -34,17 +34,25 @@ function shouldUseExistingPRBranch(
     console.log(`PR author: ${prAuthor}`);
     console.log(`Actor: ${actor}`);
     console.log(`Token owner: ${tokenOwnerLogin}`);
-    console.log(`Create new branch for PR setting: ${createNewBranchForPR}`);
+    console.log(`Create new branch setting: ${createNewBranchForPR}`);
 
     if (!createNewBranchForPR) {
+        console.log(`Using existing branch: setting disabled`);
         return true;
     }
 
     if (actor === prAuthor) {
+        console.log(`Using existing branch: actor is PR author`);
         return true;
     }
 
-    return prAuthor === tokenOwnerLogin;
+    if (prAuthor === tokenOwnerLogin) {
+        console.log(`Using existing branch: PR author is token owner`);
+        return true;
+    }
+
+    console.log(`Creating new branch: none of the conditions matched`);
+    return false;
 }
 
 async function createNewBranch(baseBranch: string, branchName: string) {
@@ -106,8 +114,6 @@ async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
             prAuthor,
             context.tokenOwner.login,
         );
-
-        console.log(`Use existing PR branch: ${useExistingBranch}`);
 
         if (state === "CLOSED" || state === "MERGED") {
             console.log(`PR #${entityNumber} is ${state}, creating new branch`);

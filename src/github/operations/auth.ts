@@ -11,7 +11,7 @@ interface GitUser {
 export interface TokenOwner {
     login: string;
     id: number;
-    type: "User" | "Bot";
+    type: "User" | "Bot" | "Organization";
 }
 
 /**
@@ -24,10 +24,20 @@ export async function fetchTokenOwnerInfo(octokit: Octokits): Promise<TokenOwner
 
         console.log(`Token owner: ${data.login} (ID: ${data.id}, Type: ${data.type})`);
 
+        // Map GitHub API types to our internal types
+        let type: TokenOwner["type"];
+        if (data.type === "Bot") {
+            type = "Bot";
+        } else if (data.type === "Organization") {
+            type = "Organization";
+        } else {
+            type = "User";
+        }
+
         return {
             login: data.login,
             id: data.id,
-            type: data.type === "Bot" ? "Bot" : "User",
+            type,
         };
     } catch (error) {
         console.error("Failed to fetch token owner info:", error);
@@ -47,9 +57,9 @@ export async function gitAuth(githubToken: string, parsedContext: GitHubContext)
     let gitUser: GitUser;
     const tokenOwner = parsedContext.tokenOwner;
 
-    // Check if token owner is a bot (GitHub App)
-    if (tokenOwner.type === "Bot") {
-        console.log(`Using token owner (bot) credentials for git authentication: ${tokenOwner.login}`);
+    // Check if token owner is a bot or organization (GitHub App)
+    if (tokenOwner.type === "Bot" || tokenOwner.type === "Organization") {
+        console.log(`Using token owner (${tokenOwner.type.toLowerCase()}) credentials for git authentication: ${tokenOwner.login}`);
         const noreplyDomain =
             serverUrl.hostname === "github.com"
                 ? "users.noreply.github.com"
@@ -68,13 +78,13 @@ export async function gitAuth(githubToken: string, parsedContext: GitHubContext)
         };
     }
 
-    $`git config user.name "${gitUser.login}"`;
-    $`git config user.email "${gitUser.email}"`;
+    await $`git config user.name "${gitUser.login}"`;
+    await $`git config user.email "${gitUser.email}"`;
 
     // Remove the authorization header that actions/checkout sets
     console.log("Removing existing git authentication headers...");
     try {
-        $`git config --unset-all http.${GITHUB_SERVER_URL}/.extraheader`;
+        await $`git config --unset-all http.${GITHUB_SERVER_URL}/.extraheader`;
         console.log("✓ Removed existing authentication headers");
     } catch (e) {
         console.log("No existing authentication headers to remove");
@@ -84,6 +94,6 @@ export async function gitAuth(githubToken: string, parsedContext: GitHubContext)
     const repo = parsedContext.payload.repository.name;
     const remoteUrl = `https://x-access-token:${githubToken}@${serverUrl.host}/${owner}/${repo}.git`;
 
-    $`git remote set-url origin ${remoteUrl}`;
+    await $`git remote set-url origin ${remoteUrl}`;
     console.log("Git authentication configured successfully");
 }
