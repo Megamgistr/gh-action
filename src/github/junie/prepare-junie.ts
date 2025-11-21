@@ -47,7 +47,7 @@ export async function prepare({
         githubToken: tokenConfig.workingToken,
         owner: context.payload.repository.owner.login,
         repo: context.payload.repository.name,
-        currentBranch: branchInfo.currentBranch,
+        currentBranch: branchInfo.workingBranch,
     })
 
     await prepareJunieCLIToken(context)

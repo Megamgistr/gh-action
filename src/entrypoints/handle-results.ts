@@ -60,14 +60,14 @@ async function getActionToDo(): Promise<ActionType> {
     const hasChangedFiles = await checkForChangedFiles();
     const hasUnpushedCommits = await checkForUnpushedCommits();
     const initCommentId = process.env[OUTPUT_VARS.INIT_COMMENT_ID];
-    const currentBranch = process.env[OUTPUT_VARS.CURRENT_BRANCH]!;
+    const isNewBranch = process.env[OUTPUT_VARS.IS_NEW_BRANCH] === 'true';
     const workingBranch = process.env[OUTPUT_VARS.WORKING_BRANCH]!;
 
 
     console.log(`Has changed files: ${hasChangedFiles}`);
     console.log(`Has unpushed commits: ${hasUnpushedCommits}`);
     console.log(`Init comment ID: ${initCommentId}`);
-    console.log(`Current branch: ${currentBranch}`);
+    console.log(`Is new branch: ${isNewBranch}`);
     console.log(`Working branch: ${workingBranch}`);
 
     let action: ActionType
@@ -77,11 +77,11 @@ async function getActionToDo(): Promise<ActionType> {
     } else if (!hasChangedFiles && hasUnpushedCommits) {
         console.log('No changes but has unpushed commits - will push');
         action = ActionType.PUSH;
-    } else if (hasChangedFiles && currentBranch !== workingBranch) {
-        console.log('Changes found and branches differ - will create PR');
+    } else if (hasChangedFiles && isNewBranch) {
+        console.log('Changes found and working in new branch - will create PR');
         action = ActionType.CREATE_PR;
-    } else if (hasChangedFiles && currentBranch === workingBranch) {
-        console.log('Changes found and branches are same - will commit directly');
+    } else if (hasChangedFiles && !isNewBranch) {
+        console.log('Changes found and working in existing branch - will commit directly');
         action = ActionType.COMMIT_CHANGES;
     } else {
         console.log('No specific action matched - do nothing');

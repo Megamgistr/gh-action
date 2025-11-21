@@ -14,9 +14,9 @@ import {WORKING_BRANCH_PREFIX} from "../constants";
 import {OUTPUT_VARS} from "../../constants/environment";
 
 export type BranchInfo = {
-    currentBranch: string;
     baseBranch: string;
     workingBranch: string;
+    isNewBranch: boolean;
 };
 
 /**
@@ -68,8 +68,8 @@ async function createNewBranch(baseBranch: string, branchName: string) {
 
         return {
             baseBranch: baseBranch,
-            currentBranch: newBranch,
             workingBranch: newBranch,
+            isNewBranch: true,
         };
     } catch (error) {
         console.error("Error in branch setup:", error);
@@ -126,9 +126,9 @@ async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
             console.log(`Successfully checked out PR branch for PR #${entityNumber}`);
 
             return {
-                currentBranch: sourceBranch!,
                 baseBranch: baseBranch,
                 workingBranch: sourceBranch!,
+                isNewBranch: false,
             };
         } else {
             console.log(`Creating new branch for PR #${entityNumber} based on ${sourceBranch}`);
@@ -150,6 +150,6 @@ export async function setupBranch(octokit: Octokits, context: GitHubContext) {
     let branchInfo = await setupWorkingBranch(context, octokit)
     core.setOutput(OUTPUT_VARS.BASE_BRANCH, branchInfo.baseBranch);
     core.setOutput(OUTPUT_VARS.WORKING_BRANCH, branchInfo.workingBranch);
-    core.setOutput(OUTPUT_VARS.CURRENT_BRANCH, branchInfo.currentBranch);
+    core.setOutput(OUTPUT_VARS.IS_NEW_BRANCH, branchInfo.isNewBranch.toString());
     return branchInfo;
 }
