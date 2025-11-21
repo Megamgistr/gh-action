@@ -9,21 +9,21 @@ export async function giveFeedback() {
     try {
         const data: FinishFeedbackData = {
             githubToken: process.env[ENV_VARS.GITHUB_TOKEN]!,
-            initCommentId: process.env.INIT_COMMENT_ID!,
-            isJobFailed: process.env.IS_JOB_FAILED === 'true',
-            parsedContext: JSON.parse(process.env.PARSED_CONTEXT!) as GitHubContext
+            initCommentId: process.env[OUTPUT_VARS.INIT_COMMENT_ID]!,
+            isJobFailed: process.env[ENV_VARS.IS_JOB_FAILED] === "true",
+            parsedContext: JSON.parse(process.env[OUTPUT_VARS.PARSED_CONTEXT]!) as GitHubContext
         }
         if (data.isJobFailed) {
-            data.failureData = {error: process.env.ERROR}
+            data.failureData = {error: process.env[ENV_VARS.ERROR]}
         } else {
             data.successData = {
-                actionToDo: process.env.ACTION_TO_DO as keyof typeof ActionType,
-                baseBranch: process.env.BASE_BRANCH,
-                commitSHA: process.env.COMMIT_SHA,
-                junieSummary: process.env.JUNIE_SUMMARY,
-                junieTitle: process.env.JUNIE_TITLE,
-                prLink: process.env.PR_LINK,
-                workingBranch: process.env.WORKING_BRANCH
+                actionToDo: process.env[OUTPUT_VARS.ACTION_TO_DO] as keyof typeof ActionType,
+                baseBranch: process.env[OUTPUT_VARS.BASE_BRANCH],
+                commitSHA: process.env[ENV_VARS.COMMIT_SHA],
+                junieSummary: process.env[OUTPUT_VARS.JUNIE_SUMMARY],
+                junieTitle: process.env[OUTPUT_VARS.JUNIE_TITLE],
+                prLink: process.env[ENV_VARS.PR_LINK],
+                workingBranch: process.env[OUTPUT_VARS.WORKING_BRANCH]
             }
         }
 

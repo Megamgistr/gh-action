@@ -1,5 +1,6 @@
 import {access, readFile} from 'fs/promises';
 import {join} from 'path';
+import {ENV_VARS} from "../../constants/environment";
 
 export interface JunieResults {
     title: string;
@@ -7,7 +8,7 @@ export interface JunieResults {
 }
 
 export async function parseJunieResults(): Promise<JunieResults> {
-    const workingDir = process.env.WORKING_DIR!
+    const workingDir = process.env[ENV_VARS.WORKING_DIR]!
     const filePath = join(workingDir, '.matterhorn', 'out', 'success.md');
 
     try {

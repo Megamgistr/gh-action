@@ -2,7 +2,7 @@ import {COMMIT_MESSAGE_TEMPLATE, PR_BODY_TEMPLATE, PR_TITLE_TEMPLATE} from "../g
 import {GitHubContext, isEntityContext} from "../github/context";
 import {execSync} from 'child_process';
 import * as core from "@actions/core";
-import {OUTPUT_VARS} from "../constants/environment";
+import {ENV_VARS, OUTPUT_VARS} from "../constants/environment";
 
 export enum ActionType {
     WRITE_COMMENT = 'WRITE_COMMENT',
@@ -14,8 +14,8 @@ export enum ActionType {
 
 export async function handleResults() {
     try {
-        const junieJsonOutput = JSON.parse(process.env.JSON_JUNIE_OUTPUT!) as any
-        const context = JSON.parse(process.env.PARSED_CONTEXT!) as GitHubContext
+        const junieJsonOutput = JSON.parse(process.env[ENV_VARS.JSON_JUNIE_OUTPUT]!) as any
+        const context = JSON.parse(process.env[OUTPUT_VARS.PARSED_CONTEXT]!) as GitHubContext
         const junieErrors = junieJsonOutput.errors
         if (junieErrors && (junieErrors as string[]).length > 0) {
             throw new Error(`Junie run failed with errors: ${junieErrors.join('\n')}`)
@@ -59,9 +59,9 @@ export async function handleResults() {
 async function getActionToDo(): Promise<ActionType> {
     const hasChangedFiles = await checkForChangedFiles();
     const hasUnpushedCommits = await checkForUnpushedCommits();
-    const initCommentId = process.env.INIT_COMMENT_ID;
-    const currentBranch = process.env.CURRENT_BRANCH!;
-    const workingBranch = process.env.WORKING_BRANCH!;
+    const initCommentId = process.env[OUTPUT_VARS.INIT_COMMENT_ID];
+    const currentBranch = process.env[OUTPUT_VARS.CURRENT_BRANCH]!;
+    const workingBranch = process.env[OUTPUT_VARS.WORKING_BRANCH]!;
 
 
     console.log(`Has changed files: ${hasChangedFiles}`);

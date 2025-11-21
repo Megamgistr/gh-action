@@ -150,7 +150,8 @@ async function handlePr(context: GitHubContext, octokit: Octokits, pr: any) {
 }
 
 async function runResolveConflictsWorkflow(octokit: Octokits, owner: string, repo: string, branch: string, prNumber: number) {
-    const ref = process.env.GITHUB_WORKFLOW_REF!;
+    const {ENV_VARS} = await import("../../constants/environment");
+    const ref = process.env[ENV_VARS.GITHUB_WORKFLOW_REF]!;
     console.log(`Running resolve conflicts workflow for ${owner}/${repo}@${branch} (PR #${prNumber}) wf ref: ${ref}`)
     const refWithoutBranch = ref.split('@')[0];
     const fileName = refWithoutBranch.split('/').pop()!;
