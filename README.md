@@ -19,10 +19,21 @@ A powerful GitHub Action that integrates [Junie](https://www.jetbrains.com/junie
 
 ### Prerequisites
 
-1. **Junie API Key**: Obtain from [JetBrains Junie](https://www.jetbrains.com/junie/)
+1. **Junie API Key**: Obtain from [JetBrains Junie](https://junie.labs.jb.gg/)
 2. **Repository Permissions**: Admin access to configure secrets and workflows
 
 ### Basic Setup
+
+You can set up Junie in two ways:
+
+#### Option 1: Automatic Setup (Recommended)
+
+Visit [https://junie.labs.jb.gg/cli](https://junie.labs.jb.gg/cli) and follow the interactive setup wizard. It will automatically:
+- Configure repository secrets
+- Create workflow files
+- Set up proper permissions
+
+#### Option 2: Manual Setup
 
 1. Add your Junie API key to repository secrets:
    - Go to **Settings → Secrets and variables → Actions**
@@ -345,15 +356,11 @@ permissions:
 
 - **Permission Validation**: Only users with write access can trigger Junie (by default)
 - **Human Actor Verification**: Blocks bot-initiated workflows to prevent loops
+  - ⚠️ **Note**: This verification only applies to interactive events (comments, issues, PRs with `@junie` mentions)
+  - Automated workflows (scheduled, workflow_dispatch, workflow_run) run without actor verification
+  - For automated workflows, ensure proper workflow permissions and conditions to prevent unintended execution
 - **Token Management**: Supports custom GitHub tokens for enhanced security
 - **Artifact Retention**: Working directory uploaded as artifact (7-day retention)
-
-## Limitations
-
-- Requires Junie API key from JetBrains
-- Currently supports only direct Junie API (no cloud provider alternatives)
-- MCP server support is limited to GitHub Checks Server
-- Executes on GitHub-hosted or self-hosted runners (requires npm/Bun support)
 
 ## Troubleshooting
 
@@ -385,16 +392,4 @@ Contributions are welcome! Please ensure:
 - Test your changes with actual GitHub workflows
 - Update documentation for new features
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-- **Junie Documentation**: https://www.jetbrains.com/junie/docs/
-- **Issues**: Report bugs or request features via GitHub Issues
-- **Examples**: See `.github/workflows/` for working examples
-
 ---
-
-*Powered by [Junie](https://www.jetbrains.com/junie/) by JetBrains*
