@@ -57,6 +57,24 @@ outputs:
   branch_name:
     description: "Junie working branch"
     value: ${{ steps.prepare.outputs.WORKING_BRANCH }}
+  should_skip:
+    description: "Whether Junie execution was skipped (no trigger matched or no write permissions)"
+    value: ${{ steps.prepare.outputs.SHOULD_SKIP }}
+  commit_sha:
+    description: "SHA of the commit created by Junie (if any)"
+    value: ${{ steps.commit.outputs.commit_long_sha }}
+  pr_url:
+    description: "URL of the pull request created by Junie (if any)"
+    value: ${{ steps.pull-request.outputs.pull-request-url }}
+  junie_title:
+    description: "Title of the task completion from Junie"
+    value: ${{ steps.junie-run-results.outputs.JUNIE_TITLE }}
+  junie_summary:
+    description: "Summary of the changes made by Junie"
+    value: ${{ steps.junie-run-results.outputs.JUNIE_SUMMARY }}
+  github_token:
+    description: "The GitHub token used by the action"
+    value: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
 
 runs:
   using: "composite"

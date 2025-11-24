@@ -11,6 +11,7 @@ import {checkWritePermissions} from "../validation/permissions";
 import {Octokits} from "../api/client";
 import {prepareJunieTask} from "./junie-tasks";
 import {prepareJunieCLIToken} from "./junie-token";
+import {validateInputSize} from "../validation/input-size";
 import {
     RESOLVE_CONFLICTS_ACTION
 } from "../constants";
@@ -22,6 +23,11 @@ export async function prepare({
                                   octokit,
                                   tokenConfig,
                               }: PrepareJunieOptions) {
+    // Validate input size if prompt is provided
+    if (context.inputs.prompt) {
+        validateInputSize(context.inputs.prompt, "prompt");
+    }
+
     const handle = await shouldHandle(context, octokit)
 
     if (!handle) {

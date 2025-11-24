@@ -48,7 +48,7 @@ describe("Permission Validation", () => {
 
       expect(result).toBe(true);
       expect(coreInfoSpy).toHaveBeenCalledWith(
-        "Actor has write access: admin"
+        "✓ Actor has write access: admin"
       );
     });
 
@@ -64,7 +64,7 @@ describe("Permission Validation", () => {
 
       expect(result).toBe(true);
       expect(coreInfoSpy).toHaveBeenCalledWith(
-        "Actor has write access: write"
+        "✓ Actor has write access: write"
       );
     });
 
@@ -80,7 +80,7 @@ describe("Permission Validation", () => {
 
       expect(result).toBe(false);
       expect(coreWarningSpy).toHaveBeenCalledWith(
-        "Actor has insufficient permissions: read"
+        '❌ Actor "contributor-user" has insufficient permissions: read (requires "write" or "admin" access to test-owner/test-repo)'
       );
     });
 
@@ -96,7 +96,7 @@ describe("Permission Validation", () => {
 
       expect(result).toBe(false);
       expect(coreWarningSpy).toHaveBeenCalledWith(
-        "Actor has insufficient permissions: none"
+        '❌ Actor "contributor-user" has insufficient permissions: none (requires "write" or "admin" access to test-owner/test-repo)'
       );
     });
 
@@ -139,7 +139,7 @@ describe("Permission Validation", () => {
 
       expect(
         checkWritePermissions(mockOctokit, mockIssueCommentContext)
-      ).rejects.toThrow(/Failed to check permissions for contributor-user/);
+      ).rejects.toThrow(/Failed to check permissions for "contributor-user" on test-owner\/test-repo/);
 
       expect(coreErrorSpy).toHaveBeenCalled();
     });

@@ -275,6 +275,30 @@ jobs:
 | Output | Description |
 |--------|-------------|
 | `branch_name` | Name of the working branch created by Junie |
+| `should_skip` | Whether Junie execution was skipped (no trigger matched or no write permissions) |
+| `commit_sha` | SHA of the commit created by Junie (if any) |
+| `pr_url` | URL of the pull request created by Junie (if any) |
+| `junie_title` | Title of the task completion from Junie |
+| `junie_summary` | Summary of the changes made by Junie |
+| `github_token` | The GitHub token used by the action |
+
+**Example usage:**
+
+```yaml
+- uses: jetbrains/junie-gh-action@v1
+  id: junie
+  with:
+    junie_api_key: ${{ secrets.JUNIE_API_KEY }}
+
+- name: Use outputs
+  if: steps.junie.outputs.should_skip != 'true'
+  run: |
+    echo "Branch: ${{ steps.junie.outputs.branch_name }}"
+    echo "Title: ${{ steps.junie.outputs.junie_title }}"
+    if [ "${{ steps.junie.outputs.pr_url }}" != "" ]; then
+      echo "PR created: ${{ steps.junie.outputs.pr_url }}"
+    fi
+```
 
 ### Required Permissions
 
