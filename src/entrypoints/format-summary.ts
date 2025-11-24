@@ -6,7 +6,6 @@
 interface JunieOutput {
   title?: string;
   summary?: string;
-  result?: string;
   error?: string;
   duration_ms?: number;
   [key: string]: any;
@@ -32,11 +31,6 @@ export function formatJunieSummary(
   // Add summary section
   if (junieOutput.summary) {
     markdown += `${junieOutput.summary}\n\n`;
-  }
-
-  // Add result section if available
-  if (junieOutput.result) {
-    markdown += `**Result:**\n${junieOutput.result}\n\n`;
   }
 
   // Add error section if present

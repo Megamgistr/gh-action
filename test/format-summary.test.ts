@@ -5,8 +5,7 @@ describe("Format Junie Summary", () => {
   test("should format basic summary", () => {
     const output = {
       title: "Task Completed",
-      summary: "Successfully implemented the feature",
-      result: "All tests passing",
+      summary: "Successfully implemented the feature. All tests passing.",
     };
 
     const markdown = formatJunieSummary(output);
@@ -89,8 +88,7 @@ describe("Format Junie Summary", () => {
   test("should format complete execution report", () => {
     const output = {
       title: "Fix TypeScript compilation errors",
-      summary: "Fixed 3 compilation errors in authentication module",
-      result: "All files now compile successfully",
+      summary: "Fixed 3 compilation errors in authentication module. All files now compile successfully.",
       duration_ms: 12500,
     };
 

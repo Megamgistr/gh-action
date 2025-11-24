@@ -56,7 +56,7 @@ async function generateJobSummary(isJobFailed: boolean): Promise<void> {
     } else {
         // For successful jobs, use already parsed values
         junieOutput.title = process.env[OUTPUT_VARS.JUNIE_TITLE];
-        junieOutput.result = process.env[OUTPUT_VARS.JUNIE_SUMMARY];
+        junieOutput.summary = process.env[OUTPUT_VARS.JUNIE_SUMMARY];
     }
 
     // Try to get duration_ms from JSON_JUNIE_OUTPUT if available
