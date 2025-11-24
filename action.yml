@@ -191,13 +191,32 @@ runs:
       run: |
         git push --set-upstream origin HEAD
 
-    - name: Give feedback and update summary
-      if: always() && steps.prepare.outputs.SHOULD_SKIP != 'true'
+    - name: Give feedback and update summary (success)
+      if: success() && steps.prepare.outputs.SHOULD_SKIP != 'true'
       shell: bash
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
       env:
-        IS_JOB_FAILED: ${{ failure() }}
+        IS_JOB_FAILED: false
+        INIT_COMMENT_ID: ${{ steps.prepare.outputs.INIT_COMMENT_ID }}
+        GITHUB_TOKEN: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
+        PARSED_CONTEXT: ${{ steps.prepare.outputs.PARSED_CONTEXT }}
+        WORKING_BRANCH: ${{ steps.prepare.outputs.WORKING_BRANCH }}
+        BASE_BRANCH: ${{ steps.prepare.outputs.BASE_BRANCH }}
+        ACTION_TO_DO: ${{ steps.junie-run-results.outputs.ACTION_TO_DO }}
+        PR_LINK: ${{ steps.pull-request.outputs.pull-request-url }}
+        COMMIT_SHA: ${{ steps.commit.outputs.commit_long_sha }}
+        JUNIE_TITLE: ${{ steps.junie-run-results.outputs.JUNIE_TITLE }}
+        JUNIE_SUMMARY: ${{ steps.junie-run-results.outputs.JUNIE_SUMMARY }}
+        JSON_JUNIE_OUTPUT: ${{ steps.junie-run.outputs.json_output }}
+
+    - name: Give feedback and update summary (failure)
+      if: failure() && steps.prepare.outputs.SHOULD_SKIP != 'true'
+      shell: bash
+      run: |
+        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
+      env:
+        IS_JOB_FAILED: true
         INIT_COMMENT_ID: ${{ steps.prepare.outputs.INIT_COMMENT_ID }}
         GITHUB_TOKEN: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
         PARSED_CONTEXT: ${{ steps.prepare.outputs.PARSED_CONTEXT }}
