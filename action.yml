@@ -191,13 +191,13 @@ runs:
       run: |
         git push --set-upstream origin HEAD
 
-    - name: Give success feedback
-      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.prepare.outputs.INIT_COMMENT_ID && success()
+    - name: Give feedback and update summary
+      if: always() && steps.prepare.outputs.SHOULD_SKIP != 'true'
       shell: bash
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
       env:
-        IS_JOB_FAILED: false
+        IS_JOB_FAILED: ${{ failure() }}
         INIT_COMMENT_ID: ${{ steps.prepare.outputs.INIT_COMMENT_ID }}
         GITHUB_TOKEN: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
         PARSED_CONTEXT: ${{ steps.prepare.outputs.PARSED_CONTEXT }}
@@ -208,15 +208,5 @@ runs:
         COMMIT_SHA: ${{ steps.commit.outputs.commit_long_sha }}
         JUNIE_TITLE: ${{ steps.junie-run-results.outputs.JUNIE_TITLE }}
         JUNIE_SUMMARY: ${{ steps.junie-run-results.outputs.JUNIE_SUMMARY }}
-
-    - name: Give failure feedback
-      if: steps.prepare.outputs.SHOULD_SKIP != 'true' && steps.prepare.outputs.INIT_COMMENT_ID && failure()
-      shell: bash
-      run: |
-        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
-      env:
-        IS_JOB_FAILED: true
-        INIT_COMMENT_ID: ${{ steps.prepare.outputs.INIT_COMMENT_ID }}
-        GITHUB_TOKEN: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
-        PARSED_CONTEXT: ${{ steps.prepare.outputs.PARSED_CONTEXT }}
+        JSON_JUNIE_OUTPUT: ${{ steps.junie-run.outputs.json_output }}
         ERROR: ${{ steps.prepare.outputs.EXCEPTION || steps.junie-run-results.outputs.EXCEPTION }}

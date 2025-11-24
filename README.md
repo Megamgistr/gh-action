@@ -12,6 +12,7 @@ A powerful GitHub Action that integrates [Junie](https://www.jetbrains.com/junie
 - **Flexible Triggers**: Activate via mentions, assignees, labels, or custom prompts
 - **Smart Branch Management**: Context-aware branch creation and management
 - **Comprehensive Feedback**: Real-time updates via GitHub comments with links to PRs and commits
+- **Rich Job Summaries**: Beautiful markdown reports in GitHub Actions with execution details
 - **MCP Extensibility**: Integrate custom Model Context Protocol servers for enhanced capabilities
 - **Runs on Your Infrastructure**: Executes entirely on your GitHub runners
 
