@@ -13,15 +13,17 @@ interface GitUser {
 export interface TokenOwner {
     login: string;
     id: number;
-    type: "User" | "Bot" | "Organization";
+    type: "User" | "Bot";
 }
 
 /**
  * Fetches information about the owner of the provided GitHub token.
  *
- * For custom tokens, queries GitHub API to get owner details (user, bot, or organization).
+ * For custom tokens, queries GitHub API to get owner details (user or bot).
  * For default GITHUB_TOKEN, returns well-known github-actions[bot] credentials to avoid
  * unnecessary API calls (default token has limited permissions).
+ *
+ * Note: GET /user can only return "User" or "Bot" types.
  *
  * @param octokit - Octokit clients for GitHub API
  * @param tokenConfig - Token configuration (default or custom)
@@ -44,13 +46,16 @@ export async function getTokenOwnerInfo(octokit: Octokits, tokenConfig: GitHubTo
         console.log(`Token owner: ${data.login} (ID: ${data.id}, Type: ${data.type})`);
 
         // Map GitHub API types to our internal type system
-        // GitHub API can return: "User", "Bot", "Organization"
+        // GET /user can only return: "User" or "Bot"
         let type: TokenOwner["type"];
         if (data.type === "Bot") {
             type = "Bot";
-        } else if (data.type === "Organization") {
-            type = "Organization";
+        } else if (data.type === "User") {
+            type = "User";
         } else {
+            // Unexpected type from GitHub API (future-proofing)
+            // This should never happen, but if GitHub adds new types, treat as User
+            console.warn(`⚠️  Unexpected token type from GitHub API: "${data.type}". Treating as User.`);
             type = "User";
         }
 
@@ -61,7 +66,19 @@ export async function getTokenOwnerInfo(octokit: Octokits, tokenConfig: GitHubTo
         };
     } catch (error) {
         console.error("Failed to fetch token owner info:", error);
-        throw new Error(`Unable to authenticate with provided token: ${error}`);
+
+        // Provide helpful error message based on error type
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        throw new Error(
+            `❌ Unable to authenticate with provided GitHub token.\n\n` +
+            `Possible causes:\n` +
+            `• Token is invalid or expired\n` +
+            `• Token lacks required permissions (needs 'read:user' or 'user' scope)\n` +
+            `• GitHub API is unavailable\n` +
+            `• Rate limit exceeded\n\n` +
+            `Original error: ${errorMessage}`
+        );
     }
 }
 
@@ -95,8 +112,8 @@ export async function gitAuth(parsedContext: GitHubContext, tokenConfig: GitHubT
 
     // Determine which credentials to use for git commits
     // Bots/Apps should commit as themselves, not as the human actor
-    if (tokenOwner.type === "Bot" || tokenOwner.type === "Organization") {
-        console.log(`Using token owner (${tokenOwner.type.toLowerCase()}) credentials for git authentication: ${tokenOwner.login}`);
+    if (tokenOwner.type === "Bot") {
+        console.log(`Using token owner (bot) credentials for git authentication: ${tokenOwner.login}`);
 
         // Generate GitHub noreply email address for bots
         // Format: {id}+{login}@users.noreply.github.com

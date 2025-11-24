@@ -19,7 +19,7 @@ export async function checkHumanActor(
     githubContext: ParsedGitHubContext,
 ) {
     try {
-        // Fetch actor information from GitHub API to determine their type (User, Bot, Organization)
+        // Fetch actor information from GitHub API to determine their type (User, Bot)
         const {data: userData} = await octokit.users.getByUsername({
             username: githubContext.actor,
         });
@@ -27,7 +27,7 @@ export async function checkHumanActor(
         const actorType = userData.type;
         console.log(`Actor type: ${actorType}`);
 
-        // Only "User" type is allowed - reject bots, organizations, and other non-human actors
+        // Only "User" type is allowed - reject bots and other non-human actors
         if (actorType !== "User") {
             // Remove "[bot]" suffix for cleaner error message (e.g., "dependabot[bot]" -> "dependabot")
             const botName = githubContext.actor.toLowerCase().replace(/\[bot\]$/, "");

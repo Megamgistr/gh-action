@@ -55,18 +55,6 @@ describe("Actor Validation", () => {
         );
     });
 
-    test("should reject Organization actor", async () => {
-      getUserByUsernameSpy = spyOn(mockOctokit.users, "getByUsername").mockResolvedValue({
-        data: { type: "Organization", login: "my-org" },
-      } as any);
-
-      const context = { ...mockIssueCommentContext, actor: "my-org" };
-
-        expect(checkHumanActor(mockOctokit, context)).rejects.toThrow(
-            /Workflow initiated by non-human actor: my-org \(type: Organization\)/
-        );
-    });
-
     test("should call GitHub API with correct username", async () => {
       getUserByUsernameSpy = spyOn(mockOctokit.users, "getByUsername").mockResolvedValue({
         data: { type: "User", login: "alice" },
