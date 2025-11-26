@@ -5,6 +5,10 @@ branding:
   color: "green"
 
 inputs:
+  path_to_bun_executable:
+    description: "Absolute path to an existing bun executable. If set, the action will skip installation and use this binary."
+    required: false
+    default: ""
   trigger_phrase:
     description: "The trigger phrase to look for in comments or issue body"
     required: false
@@ -86,16 +90,19 @@ runs:
 
     - name: Install Dependencies
       shell: bash
+      env:
+        BUN: ${{ inputs.path_to_bun_executable != '' && inputs.path_to_bun_executable || 'bun' }}
       run: |
         cd ${GITHUB_ACTION_PATH}
-        bun install
+        $BUN install
 
     - name: Prepare action
       id: prepare
       shell: bash
       run: |
-        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/prepare.ts
+        $BUN run ${GITHUB_ACTION_PATH}/src/entrypoints/prepare.ts
       env:
+        BUN: ${{ inputs.path_to_bun_executable != '' && inputs.path_to_bun_executable || 'bun' }}
         APP_TOKEN: ${{ inputs.junie_api_key }}
         PROMPT: ${{ inputs.prompt }}
         TRIGGER_PHRASE: ${{ inputs.trigger_phrase }}
@@ -140,8 +147,9 @@ runs:
       shell: bash
       id: junie-run-results
       run: |
-        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/handle-results.ts
+        $BUN run ${GITHUB_ACTION_PATH}/src/entrypoints/handle-results.ts
       env:
+        BUN: ${{ inputs.path_to_bun_executable != '' && inputs.path_to_bun_executable || 'bun' }}
         JSON_JUNIE_OUTPUT: ${{ steps.junie-run.outputs.json_output }}
         PARSED_CONTEXT: ${{ steps.prepare.outputs.PARSED_CONTEXT }}
         INIT_COMMENT_ID: ${{ steps.prepare.outputs.INIT_COMMENT_ID }}
@@ -195,8 +203,9 @@ runs:
       if: success() && steps.prepare.outputs.SHOULD_SKIP != 'true'
       shell: bash
       run: |
-        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
+        $BUN run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
       env:
+        BUN: ${{ inputs.path_to_bun_executable != '' && inputs.path_to_bun_executable || 'bun' }}
         IS_JOB_FAILED: false
         INIT_COMMENT_ID: ${{ steps.prepare.outputs.INIT_COMMENT_ID }}
         GITHUB_TOKEN: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
@@ -214,8 +223,9 @@ runs:
       if: failure() && steps.prepare.outputs.SHOULD_SKIP != 'true'
       shell: bash
       run: |
-        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
+        $BUN run ${GITHUB_ACTION_PATH}/src/entrypoints/give-feedback.ts
       env:
+        BUN: ${{ inputs.path_to_bun_executable != '' && inputs.path_to_bun_executable || 'bun' }}
         IS_JOB_FAILED: true
         INIT_COMMENT_ID: ${{ steps.prepare.outputs.INIT_COMMENT_ID }}
         GITHUB_TOKEN: ${{ steps.prepare.outputs.EJ_AUTH_GITHUB_TOKEN }}
