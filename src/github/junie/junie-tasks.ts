@@ -19,7 +19,8 @@ import {validateInputSize} from "../validation/input-size";
 
 function setValidatedTextTask(junieTask: JunieTask, text: string, taskType: string): void {
     validateInputSize(text, taskType);
-    junieTask.textTask = {text};
+    const prevText = junieTask.textTask?.text + "\n\n" || "";
+    junieTask.textTask = {text: prevText + text};
 }
 
 export async function prepareJunieTask(
