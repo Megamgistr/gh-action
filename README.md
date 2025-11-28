@@ -11,6 +11,7 @@ A powerful GitHub Action that integrates [Junie](https://www.jetbrains.com/junie
 - **CI Failure Analysis**: Investigates failed checks and suggests fixes using MCP integration
 - **Flexible Triggers**: Activate via mentions, assignees, labels, or custom prompts
 - **Smart Branch Management**: Context-aware branch creation and management
+- **Silent Mode**: Run analysis-only workflows without comments or git operations
 - **Comprehensive Feedback**: Real-time updates via GitHub comments with links to PRs and commits
 - **Rich Job Summaries**: Beautiful markdown reports in GitHub Actions with execution details
 - **MCP Extensibility**: Integrate custom Model Context Protocol servers for enhanced capabilities
@@ -65,7 +66,7 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v4
-      - uses: jetbrains/junie-gh-action@v1
+      - uses: JetBrains/junie-github-action@main
         with:
           junie_api_key: ${{ secrets.JUNIE_API_KEY }}
 ```
@@ -129,7 +130,7 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - uses: jetbrains/junie-gh-action@v1
+      - uses: JetBrains/junie-github-action@main
         with:
           junie_api_key: ${{ secrets.JUNIE_API_KEY }}
           resolve_conflicts: true
@@ -140,6 +141,60 @@ jobs:
 - **Automatic**: With `resolve_conflicts: true`, Junie monitors pushes and auto-resolves conflicts in open PRs
 
 **Note**: The `resolve_conflicts: true` setting is only needed for automatic conflict detection. For manual resolution via comments, your basic Junie workflow is sufficient.
+
+---
+
+### Silent Mode (Output-Only)
+
+**Use Case**: Get Junie analysis without creating comments, branches, or commits
+
+```yaml
+name: Code Analysis
+
+on:
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  analyze:
+    if: contains(github.event.comment.body, '@junie')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: JetBrains/junie-github-action@main
+        id: junie
+        with:
+          junie_api_key: ${{ secrets.JUNIE_API_KEY }}
+          silent_mode: true
+
+      - name: Process Junie Output
+        if: steps.junie.outputs.should_skip != 'true'
+        run: |
+          echo "Title: ${{ steps.junie.outputs.junie_title }}"
+          echo "Summary: ${{ steps.junie.outputs.junie_summary }}"
+
+          # Send to external system, generate custom report, etc.
+          curl -X POST https://your-api.com/analysis \
+            -d "title=${{ steps.junie.outputs.junie_title }}" \
+            -d "summary=${{ steps.junie.outputs.junie_summary }}"
+```
+
+**How it works**:
+- **For PRs**: Checks out the PR branch (not the current branch)
+- **For Issues**: Uses the current branch without creating a new one
+- **No Comments**: Skips all GitHub comment creation
+- **No Git Operations**: Skips commits, branch creation, and PRs
+- **Output Available**: All results available via action outputs and Job Summary
+
+**When to use**:
+- Custom reporting workflows
+- External CI/CD integration
+- Code analysis without modification
+- Testing Junie responses before applying changes
 
 ---
 
@@ -165,7 +220,7 @@ jobs:
       checks: read
     steps:
       - uses: actions/checkout@v4
-      - uses: jetbrains/junie-gh-action@v1
+      - uses: JetBrains/junie-github-action@main
         with:
           junie_api_key: ${{ secrets.JUNIE_API_KEY }}
           allowed_mcp_servers: mcp_github_checks_server
@@ -192,7 +247,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: jetbrains/junie-gh-action@v1
+      - uses: JetBrains/junie-github-action@main
         with:
           junie_api_key: ${{ secrets.JUNIE_API_KEY }}
           prompt: |
@@ -221,7 +276,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: jetbrains/junie-gh-action@v1
+      - uses: JetBrains/junie-github-action@main
         with:
           junie_api_key: ${{ secrets.JUNIE_API_KEY }}
           label_trigger: "auto-fix"
@@ -263,6 +318,7 @@ jobs:
 | Input | Description | Default |
 |-------|-------------|---------|
 | `resolve_conflicts` | Enable automatic conflict detection (not needed for manual `@junie` resolution) | `false` |
+| `silent_mode` | Run Junie without comments, branch creation, or commits - only prepare data and output results | `false` |
 
 #### Authentication
 
@@ -286,7 +342,7 @@ jobs:
 **Example usage:**
 
 ```yaml
-- uses: jetbrains/junie-gh-action@v1
+- uses: JetBrains/junie-github-action@main
   id: junie
   with:
     junie_api_key: ${{ secrets.JUNIE_API_KEY }}

@@ -11,12 +11,14 @@ import {
 } from "../context";
 import type {Octokits} from "../api/client";
 import {OUTPUT_VARS} from "../../constants/environment";
-import {WORKING_BRANCH_PREFIX} from "../../constants/github";
+import {RESOLVE_CONFLICTS_TRIGGER_PHRASE_REGEXP, WORKING_BRANCH_PREFIX} from "../../constants/github";
+import {isReviewOrCommentHasTrigger} from "../validation/trigger";
 
 export type BranchInfo = {
     baseBranch: string;
     workingBranch: string;
     isNewBranch: boolean;
+    prBaseBranch?: string;
 };
 
 /**
@@ -27,6 +29,7 @@ export type BranchInfo = {
  * - Bot/App making changes to PR it created (always use existing branch)
  * - External contributor helping with PR (configurable via createNewBranchForPR setting)
  *
+ * @param silentMode - Setting to suppress any repository modifications
  * @param createNewBranchForPR - Setting to create new branches for external contributors
  * @param actor - Current user triggering the workflow
  * @param prAuthor - Original author of the pull request
@@ -34,18 +37,20 @@ export type BranchInfo = {
  * @returns `true` if existing PR branch should be used, `false` to create new branch
  */
 function shouldUseExistingPRBranch(
+    silentMode: boolean,
     createNewBranchForPR: boolean,
     actor: string,
     prAuthor: string,
     tokenOwnerLogin: string,
 ): boolean {
+    console.log(`Silent mode: ${silentMode}`);
     console.log(`PR author: ${prAuthor}`);
     console.log(`Actor: ${actor}`);
     console.log(`Token owner: ${tokenOwnerLogin}`);
     console.log(`Create new branch setting: ${createNewBranchForPR}`);
 
-    if (!createNewBranchForPR) {
-        console.log(`Using existing branch: setting disabled`);
+    if (!createNewBranchForPR || silentMode) {
+        console.log(`Using existing branch`);
         return true;
     }
 
@@ -70,16 +75,16 @@ function shouldUseExistingPRBranch(
  *
  * @param baseBranch - The base branch to branch from (e.g., "main", "develop")
  * @param branchName - Desired name for the new branch (will be normalized)
+ * @param prBaseBranch - The base branch for pull requests (e.g., "main", "develop")
  * @returns Branch information object with base, working branch names and isNewBranch flag
  * @throws {Error} if git operations fail (branch doesn't exist, network issues, etc.)
  */
-async function createNewBranch(baseBranch: string, branchName: string) {
+async function createNewBranch(baseBranch: string, branchName: string, prBaseBranch: string | undefined) {
     // Normalize branch name: lowercase and limit to 50 chars for git compatibility
     const newBranch = branchName.toLowerCase().substring(0, 50);
 
     try {
         console.log(`Creating new branch ${newBranch} from ${baseBranch}`);
-        await $`git fetch origin ${baseBranch} --depth=1`;
         await $`git checkout -b ${newBranch} origin/${baseBranch}`;
 
         console.log(`✓ Successfully created and checked out new branch: ${newBranch}`);
@@ -88,6 +93,7 @@ async function createNewBranch(baseBranch: string, branchName: string) {
             baseBranch: baseBranch,
             workingBranch: newBranch,
             isNewBranch: true,
+            prBaseBranch
         };
     } catch (error) {
         console.error(`❌ Failed to create branch "${newBranch}" from "${baseBranch}":`, error);
@@ -103,11 +109,13 @@ async function createNewBranch(baseBranch: string, branchName: string) {
     }
 }
 
-async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
+async function setupWorkingBranch(context: GitHubContext, octokit: Octokits): Promise<BranchInfo> {
     let baseBranch = context.inputs.baseBranch || context.payload.repository.default_branch
+    let prBaseBranch: string | undefined;
     const entityNumber = context.entityNumber;
     const isPR = context.isPR;
     const createNewBranchForPR = context.inputs.createNewBranchForPR;
+    const fetchDepth = 20
 
     if (isPR && entityNumber) {
         let sourceBranch: string
@@ -148,6 +156,7 @@ async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
         console.log(`Target branch: ${sourceBranch}`);
 
         const useExistingBranch = shouldUseExistingPRBranch(
+            context.inputs.silentMode,
             createNewBranchForPR,
             context.actor,
             prAuthor,
@@ -158,7 +167,6 @@ async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
             console.log(`PR #${entityNumber} is ${state}, creating new branch`);
         } else if (useExistingBranch) {
             try {
-                const fetchDepth = 20
                 await $`git fetch origin --depth=${fetchDepth} ${sourceBranch}`;
                 await $`git checkout ${sourceBranch}`;
 
@@ -182,6 +190,7 @@ async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
             }
         } else {
             console.log(`Creating new branch for PR #${entityNumber} based on ${sourceBranch}`);
+            prBaseBranch = baseBranch;
             baseBranch = sourceBranch;
         }
     }
@@ -190,10 +199,51 @@ async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
         baseBranch = context.payload.ref.replace("refs/heads/", "");
         console.log(`Push event detected, base branch: ${baseBranch}`);
     }
+    await $`git fetch origin ${baseBranch} --depth=${fetchDepth}`;
+    await $`git checkout -b ${baseBranch}`;
 
-    const entityType = isPR ? "pr" : entityNumber ? "issue" : "run";
-    const branchName = `${WORKING_BRANCH_PREFIX}${entityType}-${entityNumber || context.runId}`;
-    return await createNewBranch(baseBranch, branchName)
+    if (!context.inputs.silentMode) {
+        const entityType = isPR ? "pr" : entityNumber ? "issue" : "run";
+        const branchName = `${WORKING_BRANCH_PREFIX}${entityType}-${entityNumber || context.runId}`;
+
+        return await createNewBranch(baseBranch, branchName, prBaseBranch)
+    }
+
+    return {
+        baseBranch: baseBranch,
+        workingBranch: baseBranch,
+        isNewBranch: false,
+        prBaseBranch
+    }
+}
+
+/**
+ * Ensures the repository has sufficient git history for merge operations.
+ *
+ * GitHub Actions by default clones with shallow history (depth=1).
+ * For merge operations, we need the full history of the base branch to find the merge-base.
+ *
+ * @param baseBranch - The branch to merge from (e.g., "main")
+ * @throws {Error} if unable to fetch history
+ */
+export async function ensureMergeHistory(baseBranch: string) {
+    console.log(`Fetching full history of ${baseBranch} for merge operation...`);
+
+    try {
+        // Fetch the base branch with full history (no --depth = complete history)
+        await $`git fetch origin ${baseBranch}`;
+        console.log(`✓ Successfully fetched ${baseBranch} with full history`);
+    } catch (error) {
+        throw new Error(
+            `❌ Failed to fetch ${baseBranch} history for merge operation. ` +
+            `This could be due to:\n` +
+            `• Branch "${baseBranch}" does not exist in the repository\n` +
+            `• Network connectivity issues\n` +
+            `• Insufficient permissions to fetch from the repository\n` +
+            `• Git authentication problems\n` +
+            `Original error: ${error instanceof Error ? error.message : String(error)}`
+        );
+    }
 }
 
 /**
@@ -213,6 +263,11 @@ async function setupWorkingBranch(context: GitHubContext, octokit: Octokits) {
  */
 export async function setupBranch(octokit: Octokits, context: GitHubContext) {
     let branchInfo = await setupWorkingBranch(context, octokit)
+
+    // If we need to resolve conflicts, ensure we have full git history for merge operations
+    if (context.inputs.resolveConflicts || isReviewOrCommentHasTrigger(context, RESOLVE_CONFLICTS_TRIGGER_PHRASE_REGEXP)) {
+        await ensureMergeHistory(branchInfo.prBaseBranch || branchInfo.baseBranch);
+    }
 
     // Set GitHub Actions outputs for use in subsequent steps
     core.setOutput(OUTPUT_VARS.BASE_BRANCH, branchInfo.baseBranch);

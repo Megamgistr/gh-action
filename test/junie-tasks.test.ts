@@ -1,4 +1,3 @@
-
 import {describe, test, expect, mock, beforeEach} from "bun:test";
 import {prepareJunieTask} from "../src/github/junie/junie-tasks";
 import {GitHubContext} from "../src/github/context";
@@ -166,7 +165,6 @@ describe("prepareJunieTask", () => {
                     listFiles: mock(() => Promise.resolve({
                         data: [
                             {
-                                sha: "file1sha",
                                 filename: "file1.ts",
                                 status: "modified",
                                 additions: 5,
