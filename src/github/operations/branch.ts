@@ -200,7 +200,7 @@ async function setupWorkingBranch(context: GitHubContext, octokit: Octokits): Pr
         console.log(`Push event detected, base branch: ${baseBranch}`);
     }
     await $`git fetch origin ${baseBranch} --depth=${fetchDepth}`;
-    await $`git checkout -b ${baseBranch}`;
+    await $`git checkout ${baseBranch}`;
 
     if (!context.inputs.silentMode) {
         const entityType = isPR ? "pr" : entityNumber ? "issue" : "run";
